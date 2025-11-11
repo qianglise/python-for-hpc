@@ -64,7 +64,7 @@ Note how simple it is to run on a GPU device using CuPy, i.e. essentially by cha
 :class: warning
 
 One recommendation is not to change the import line
-in the code to something like import cupy as np,
+in the code to something like `import cupy as np`,
 which can cause problems if you need to use
 NumPy code and not CuPy code.
 
@@ -94,7 +94,7 @@ As in the above example, the variable l2_gpu remains on the GPU. One has to copy
 
 Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer between the host (CPU) device and the GPU device, which is costly in terms of performance.
 
-> [!NOTE]\
+> [!NOTE]
 > Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
 
@@ -298,7 +298,7 @@ CuPy implements standard APIs for data exchange and interoperability, such as  _
 
 Note that the return type of these operations is still consistent with the initial type
 
-> [!NOTE]\
+> [!NOTE]
 > __array_ufunc__ feature requires NumPy 1.13 or later.
 > __array_function__ feature requires NumPy 1.16 or later; As of NumPy 1.17, __array_function__ is enabled by default.
 :::{discussion}
