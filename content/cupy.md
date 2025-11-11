@@ -37,8 +37,55 @@ language for the entire page.
 :::{highlight} python
 :::
 
+## Basics of CuPy
+
+CuPy's syntax here is identical to that of NumPy. A list of
+NumPy/SciPy APIs and its corresponding CuPy implementations
+is summarised
+[here](https://docs.cupy.dev/en/stable/reference/comparison.html#comparison-table).
+
+In summary, CuPy provides N-dimensional array (ndarray),
+sparse matrices, and the associated routines for GPU devices,
+most having the same API as NumPy/SciPy.
+
+Let us take a look at the following code snippet which calculates the L2-norm of an array.
+Note how simple it is to run on a GPU device using CuPy, i.e. essentially by changing np to cp.
+
+```
+>> import numpy as np
+>> import cupy as cp
+>> x_cpu = np.array([1, 2, 3])
+>> l2_cpu = np.linalg.norm(x_cpu)
+>> x_gpu = cp.array([1 ,2 ,3])
+>> l2_gpu = cp.linalg.norm(x_gpu)
+```
+
+:::{admonition} Warning
+:class: warning
+
+One recommendation is not to change the import line
+in the code to something like import cupy as np,
+which can cause problems if you need to use
+NumPy code and not CuPy code.
+
+### Conversion to/from NumPy arrays
+
+Although cupy.ndarray is the CuPy counterpart of NumPy numpy.ndarray, the main difference is that cupy.ndarray resides on `the current device`, and they are not implicitly convertible to each other.
+
+- To convert numpy.ndarray to cupy.ndarray, use cupy.array() or cupy.asarray()
+- To convert cupy.ndarray to numpy.ndarray, use cupy.asnumpy() or cupy.ndarray.get()
+
+As in the above example, the variable l2_gpu remains on the GPU. One has to copy the variable back to the CPU explicitly e.g. if printing the result to the screen is needed.
+
+Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer between the host (CPU) device and the GPU device, which is costly in terms of performance.
+
+Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
+
+
+## User-Defined Kernels
 
 ## CuPy vs Numpy/SciPy
+
 
 Although the CuPy team focuses on providing a complete
 NumPy/SciPy API coverage to become a full drop-in replacement, there are some differences.
@@ -227,11 +274,17 @@ print((a + a).flags.f_contiguous)
 False
 ```
 
+Keep these differences in mind as you port your NumPy code to CuPy.
+
 ## Interoperability
 
-cupy.ndarray implements __array_ufunc__ interface (see NEP 13 — A Mechanism for Overriding Ufuncs for details). This enables NumPy ufuncs to be directly operated on CuPy arrays. __array_ufunc__ feature requires NumPy 1.13 or later.
+CuPy implements standard APIs for data exchange and interoperability, such as  __array_ufunc__ interface (see NEP 13 — A Mechanism for Overriding Ufuncs for details), __array_function__ interface (see NEP 18 — A dispatch mechanism for NumPy’s high level array functions for details), and other [Python Array API Standard](https://data-apis.org/array-api/latest). This enables e.g. NumPy to be directly operated on CuPy arrays.
 
+Note that the return type of these operations is still consistent with the initial type
 
+> [!NOTE]\
+> __array_ufunc__ feature requires NumPy 1.13 or later.
+> __array_function__ feature requires NumPy 1.16 or later; As of NumPy 1.17, __array_function__ is enabled by default.
 :::{discussion}
 Discuss the following.
 
