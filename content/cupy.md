@@ -68,6 +68,7 @@ in the code to something like import cupy as np,
 which can cause problems if you need to use
 NumPy code and not CuPy code.
 
+:::
 
 
 ### Conversion to/from NumPy arrays
@@ -93,7 +94,8 @@ As in the above example, the variable l2_gpu remains on the GPU. One has to copy
 
 Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer between the host (CPU) device and the GPU device, which is costly in terms of performance.
 
-Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
+> [!NOTE]\
+> Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
 
 ## User-Defined Kernels
