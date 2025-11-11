@@ -108,6 +108,16 @@ NumPy/SciPy API coverage to become a full drop-in replacement,
 some important differences between CuPy and NumPy should be noted,
 one should keep these differences in mind when porting NumPy code to CuPy.
 
+- Some casting behaviors from floating point to integer
+are not defined in the C++ specification. The casting
+from a negative floating point to an unsigned integer
+and from infinity to an integer are examples.
+- CuPy random methods support the dtype argument.
+- Out-of-bounds indices and duplicate values in indices are handled differently.
+- Reduction methods return zero-dimension arrays.
+
+
+
 ### Cast behavior from float to integer
 
 Some casting behaviors from float to integer are not defined in C++ specification. The casting from a negative float to unsigned integer and infinity to integer is one of such examples. The behavior of NumPy depends on your CPU architecture. This is the result on an Intel CPU:
