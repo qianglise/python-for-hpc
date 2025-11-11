@@ -60,11 +60,11 @@ Note how simple it is to run on a GPU device using CuPy, i.e. essentially by cha
 >> l2_gpu = cp.linalg.norm(x_gpu)
 ```
 
-:::{admonition} Warning
-:class: warning
+:::{warning}
 
-One recommendation is not to change the import line
-in the code to something like `import cupy as np`,
+Do not change the import line
+in the code to something like
+`import cupy as np`,
 which can cause problems if you need to use
 NumPy code and not CuPy code.
 
@@ -94,14 +94,27 @@ As in the above example, the variable l2_gpu remains on the GPU. One has to copy
 
 Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer between the host (CPU) device and the GPU device, which is costly in terms of performance.
 
-> [!NOTE]
-> Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
-
 :::{note}
-Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
+The device will be called <CUDA Device 0> even if you are on AMD GPUs.
 :::
 
 ## User-Defined Kernels
+
+Sometimes you need a specific GPU function or routine
+that is not provided by an existing library or tool.
+In these situation, you need to write a "custom kernel",
+i.e. a user-defined GPU kernel. Custom kernels written
+with CuPy only require a small snippet of C++,
+and CuPy automatically wraps and compiles it.
+Compiled binaries are then cached and reused in subsequent runs.
+
+CuPy has four types of custom kernels:
+
+- cupy.ElementwiseKernel: User-defined elementwise kernel
+- cupy.ReductionKernel: User-defined reduction kernel
+- cupy.RawKernel: User-defined custom kernel
+- cupy.fuse: Decorator that fuses a function
+
 
 ## CuPy vs Numpy/SciPy
 
