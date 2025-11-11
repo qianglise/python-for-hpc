@@ -97,6 +97,9 @@ Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer
 > [!NOTE]
 > Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
+:::{note}
+Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
+:::
 
 ## User-Defined Kernels
 
