@@ -68,6 +68,8 @@ in the code to something like import cupy as np,
 which can cause problems if you need to use
 NumPy code and not CuPy code.
 
+
+
 ### Conversion to/from NumPy arrays
 
 Although cupy.ndarray is the CuPy counterpart of NumPy numpy.ndarray, the main difference is that cupy.ndarray resides on `the current device`, and they are not implicitly convertible to each other.
@@ -76,6 +78,18 @@ Although cupy.ndarray is the CuPy counterpart of NumPy numpy.ndarray, the main d
 - To convert cupy.ndarray to numpy.ndarray, use cupy.asnumpy() or cupy.ndarray.get()
 
 As in the above example, the variable l2_gpu remains on the GPU. One has to copy the variable back to the CPU explicitly e.g. if printing the result to the screen is needed.
+
+```
+>> import numpy as np
+>> import cupy as cp
+>> x_cpu = np.array([1, 2, 3])
+>> l2_cpu = np.linalg.norm(x_cpu)
+>> x_gpu = cp.array([1 ,2 ,3])
+>> l2_gpu = cp.linalg.norm(x_gpu)
+>> # copy l2_gpu from GPU to CPU for e.g. printing
+>> l2_cpu = cp.asnumpy(l2_gpu)
+```
+
 
 Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer between the host (CPU) device and the GPU device, which is costly in terms of performance.
 
@@ -88,7 +102,9 @@ Note that the device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
 
 Although the CuPy team focuses on providing a complete
-NumPy/SciPy API coverage to become a full drop-in replacement, there are some differences.
+NumPy/SciPy API coverage to become a full drop-in replacement,
+some important differences between CuPy and NumPy should be noted,
+one should keep these differences in mind when porting NumPy code to CuPy.
 
 ### Cast behavior from float to integer
 
@@ -273,8 +289,6 @@ a = cp.array([[1, 2], [3, 4]], order='F')
 print((a + a).flags.f_contiguous)
 False
 ```
-
-Keep these differences in mind as you port your NumPy code to CuPy.
 
 ## Interoperability
 
