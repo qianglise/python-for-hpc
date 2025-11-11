@@ -20,7 +20,7 @@ Intro
 :caption: The lesson
 :maxdepth: 1
 
-cupy.md
+cupy
 ```
 
 ```{toctree}

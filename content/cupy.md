@@ -229,6 +229,8 @@ False
 
 ## Interoperability
 
+cupy.ndarray implements __array_ufunc__ interface (see NEP 13 — A Mechanism for Overriding Ufuncs for details). This enables NumPy ufuncs to be directly operated on CuPy arrays. __array_ufunc__ feature requires NumPy 1.13 or later.
+
 
 :::{discussion}
 Discuss the following.
