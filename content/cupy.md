@@ -40,7 +40,7 @@ NumPy/SciPy APIs and its corresponding CuPy implementations
 is summarised
 [here](https://docs.cupy.dev/en/stable/reference/comparison.html#comparison-table).
 
-In summary, CuPy provides N-dimensional array (ndarray),
+In short, CuPy provides N-dimensional array (ndarray),
 sparse matrices, and the associated routines for GPU devices,
 most having the same API as NumPy/SciPy.
 
@@ -161,6 +161,9 @@ To switch to another GPU device, use the `Device` context manager:
 ```
 with cp.cuda.Device(1):
    x_on_gpu1 = cp.array([1, 2, 3, 4, 5])
+
+print("x_on_gpu1 is on device:" x_on_gpu1.device)
+
 x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
 ```
 
@@ -264,9 +267,9 @@ and from infinity to an integer are examples.
 
 ### NumPy
 CuPy implements standard APIs for data exchange and interoperability,
-such as  __array_ufunc__ interface (see NEP 13 —
+such as `__array_ufunc__` interface (see NEP 13 —
 A Mechanism for Overriding Ufuncs for details),
-__array_function__ interface (see NEP 18 —
+`__array_function__` interface (see NEP 18 —
 A dispatch mechanism for NumPy’s high level array functions for details),
 and other [Python Array API Standard](https://data-apis.org/array-api/latest).
 This enables e.g. NumPy, Numba among others to be directly operated on CuPy arrays.
@@ -293,7 +296,7 @@ As of NumPy 1.17, `__array_function__` is enabled by default
 
 ### Numba
 
-cupy.ndarray implements __cuda_array_interface__,
+`cupy.ndarray` implements `__cuda_array_interface__`,
 which is the CUDA array interchange interface compatible with
 Numba v0.39.0 or later (see CUDA Array Interface for details).
 It means you can pass CuPy arrays to kernels JITed with Numba.
