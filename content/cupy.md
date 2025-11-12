@@ -225,6 +225,101 @@ and from infinity to an integer are examples.
 - Reduction methods return zero-dimension arrays.
 
 
+
+## Interoperability
+
+### NumPy
+CuPy implements standard APIs for data exchange and interoperability,
+such as  __array_ufunc__ interface (see NEP 13 —
+A Mechanism for Overriding Ufuncs for details),
+__array_function__ interface (see NEP 18 —
+A dispatch mechanism for NumPy’s high level array functions for details),
+and other [Python Array API Standard](https://data-apis.org/array-api/latest).
+This enables e.g. NumPy, Numba among others to be directly operated on CuPy arrays.
+
+Note that the return type of these operations is still consistent with the initial type.
+
+```
+import cupy as cp
+import numpy as np
+
+dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
+result = np.sum(dev_arr)
+print(type(result))  # => <class 'cupy._core.core.ndarray'>
+```
+
+
+:::{note}
+`__array_ufunc__` feature requires NumPy 1.13 or later
+
+`__array_function__` feature requires NumPy 1.16 or later
+
+As of NumPy 1.17, `__array_function__` is enabled by default
+:::
+
+### Numba
+
+cupy.ndarray implements __cuda_array_interface__,
+which is the CUDA array interchange interface compatible with
+Numba v0.39.0 or later (see CUDA Array Interface for details).
+It means you can pass CuPy arrays to kernels JITed with Numba.
+
+```
+import cupy
+from numba import cuda
+
+@cuda.jit
+def add(x, y, out):
+        start = cuda.grid(1)
+        stride = cuda.gridsize(1)
+        for i in range(start, x.shape[0], stride):
+                out[i] = x[i] + y[i]
+
+a = cupy.arange(10)
+b = a * 2
+out = cupy.zeros_like(a)
+
+print(out)  # => [0 0 0 0 0 0 0 0 0 0]
+
+add[1, 32](a, b, out)
+
+print(out)  # => [ 0  3  6  9 12 15 18 21 24 27]
+```
+
+In addition, cupy.asarray() supports zero-copy conversion from Numba CUDA array to CuPy array.
+```
+import numpy
+import numba
+import cupy
+
+x = numpy.arange(10)  # type: numpy.ndarray
+x_numba = numba.cuda.to_device(x)  # type: numba.cuda.cudadrv.devicearray.DeviceNDArray
+x_cupy = cupy.asarray(x_numba)  # type: cupy.ndarray
+```
+
+### CPU/GPU agnostic code
+
+CuPy's compatibility with NumPy makes it possible to write CPU/GPU agnostic code.
+For this purpose, CuPy implements the cupy.get_array_module() function that
+returns a reference to cupy if any of its arguments resides on a GPU and numpy otherwise.
+
+Here is an example of a CPU/GPU agnostic function
+```
+import numpy as np
+import cupy as cp
+# Easy to transfer arrays between device and the host
+a = np.arange(0, 20, 2)
+dev_a = cp.asarray(a)
+# GPU/CPU agnostic code also works with CuPy
+xp = cp.get_array_module(dev_a) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
+y = xp.sin(dev_a) + xp.cos(dev_a)
+```
+
+
+
+
+
+
 ## User-Defined Kernels
 
 Sometimes you need a specific GPU function or routine
@@ -593,47 +688,6 @@ print((a + a).flags.f_contiguous)
 False
 ```
 
-## Interoperability
-
-CuPy implements standard APIs for data exchange and interoperability, such as  __array_ufunc__ interface (see NEP 13 — A Mechanism for Overriding Ufuncs for details), __array_function__ interface (see NEP 18 — A dispatch mechanism for NumPy’s high level array functions for details), and other [Python Array API Standard](https://data-apis.org/array-api/latest). This enables e.g. NumPy to be directly operated on CuPy arrays.
-
-Note that the return type of these operations is still consistent with the initial type
-
-```
-import cupy as cp
-import numpy as np
-
-dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
-result = np.sum(dev_arr)
-print(type(result))  # => <class 'cupy._core.core.ndarray'>
-```
-
-### CPU/GPU agnostic code
-CuPy's compatibility with NumPy makes it possible to write CPU/GPU agnostic code.
-For this purpose, CuPy implements the cupy.get_array_module() function that
-returns a reference to cupy if any of its arguments resides on a GPU and numpy otherwise.
-
-Here is an example of a CPU/GPU agnostic function
-```
-import numpy as np
-import cupy as cp
-# Easy to transfer arrays between device and the host
-a = np.arange(0, 20, 2)
-dev_a = cp.asarray(a)
-# GPU/CPU agnostic code also works with CuPy
-xp = cp.get_array_module(dev_a) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
-y = xp.sin(dev_a) + xp.cos(dev_a)
-```
-
-
-
-:::{note}
-`__array_ufunc__` feature requires NumPy 1.13 or later
-
-`__array_function__` feature requires NumPy 1.16 or later
-
-As of NumPy 1.17, `__array_function__` is enabled by default
-:::
 
 :::{discussion}
 Discuss the following.
@@ -642,30 +696,6 @@ Discuss the following.
 - Another discussion topic
 :::
 
-
-
-## Section
-
-```
-print("hello world")
-# This uses the default highlighting language
-```
-
-```python
-print("hello world)
-```
-
-
-
-## Exercises: description
-
-:::{exercise} Exercise Topic-1: imperative description of exercise
-Exercise text here.
-:::
-
-:::{solution}
-Solution text here
-:::
 
 
 
@@ -678,8 +708,7 @@ hint of what comes next.
 
 ## See also
 
-- Other relevant links
-- Other link
+
 - [GPU programming: When, Why and How?](https://enccs.github.io/gpu-programming)
 
 
@@ -689,6 +718,4 @@ hint of what comes next.
 - CuPy is a good first step to start 
 - Fine-tuning for optimal performance of real-world applications can be tedioius
 
-This is another holdover from the carpentries style.  This perhaps
-is better done in a "summary" section.
 :::
