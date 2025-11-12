@@ -11,7 +11,7 @@
 - Be able to copy data from host to device memory and vice versa
 - Be able to profile a simple function
   and estimate the speed-up by using GPU
-...
+-
 
 This is also a holdover from the carpentries-style.  It could
 usually be left off.
@@ -28,12 +28,7 @@ NumPy/SciPy code on both NVIDIA CUDA or AMD ROCm platforms.
 By design, the CuPy interface is as close as possible to NumPy/SciPy,
 making code porting much easier.
 
-The introduction should be a high level overview of what is on the
-page and why it is interesting.
 
-
-The lines below (only in the source) will set the default highlighting
-language for the entire page.
 
 :::{highlight} python
 :::
@@ -115,7 +110,9 @@ CuPy provides three types of user-defined kernels:
 - cupy.ElementwiseKernel: User-defined elementwise kernel
 - cupy.ReductionKernel: User-defined reduction kernel
 - cupy.RawKernel: User-defined custom kernel
-#- cupy.fuse: Decorator that fuses a function
+
+
+<!-- cupy.fuse: Decorator that fuses a function -->
 
 ### ElementwiseKernel
 
@@ -500,14 +497,11 @@ y = xp.sin(dev_a) + xp.cos(dev_a)
 When you need to manipulate CPU and GPU arrays, an explicit data transfer may be required to move them to the same location – either CPU or GPU. For this purpose, CuPy implements two sister methods called cupy.asnumpy() and cupy.asarray(). Here is an example that demonstrates the use of both methods:
 ```
 x_cpu = np.array([1, 2, 3])
-
 y_cpu = np.array([4, 5, 6])
-
 x_cpu + y_cpu
 array([5, 7, 9])
 
 x_gpu = cp.asarray(x_cpu)
-
 x_gpu + y_cpu
 Traceback (most recent call last):
 ...
@@ -515,13 +509,10 @@ TypeError: Unsupported type <class 'numpy.ndarray'>
 
 cp.asnumpy(x_gpu) + y_cpu
 array([5, 7, 9])
-
 cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
 array([5, 7, 9])
-
 x_gpu + cp.asarray(y_cpu)
 array([5, 7, 9])
-
 cp.asarray(x_gpu) + cp.asarray(y_cpu)
 array([5, 7, 9])
 ```
@@ -581,7 +572,7 @@ hint of what comes next.
 
 - Other relevant links
 - Other link
-- GPU programming
+- [GPU programming: When, Why and How?](https://enccs.github.io/gpu-programming)
 
 
 
