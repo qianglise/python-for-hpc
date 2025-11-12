@@ -60,7 +60,9 @@ Note how simple it is to run on a GPU device using CuPy, i.e. essentially by cha
 
 Do not change the import line
 in the code to something like
+
 `import cupy as np`,
+
 which can cause problems if you need to use
 NumPy code and not CuPy code.
 
@@ -69,30 +71,124 @@ NumPy code and not CuPy code.
 
 ### Conversion to/from NumPy arrays
 
-Although cupy.ndarray is the CuPy counterpart of NumPy numpy.ndarray, the main difference is that cupy.ndarray resides on `the current device`, and they are not implicitly convertible to each other.
+Although cupy.ndarray is the CuPy counterpart of NumPy numpy.ndarray,
+the main difference is that cupy.ndarray resides on the `current device`,
+and they are not implicitly convertible to each other.
+When you need to manipulate CPU and GPU arrays, an explicit data transfer
+may be required to move them to the same location – either CPU or GPU.
+For this purpose, CuPy implements the following methods:
 
 - To convert numpy.ndarray to cupy.ndarray, use cupy.array() or cupy.asarray()
 - To convert cupy.ndarray to numpy.ndarray, use cupy.asnumpy() or cupy.ndarray.get()
 
-As in the above example, notice that the variable l2_gpu actually remains on the GPU. One has to copy the variable back to the CPU explicitly e.g. if XXXXXXXXXXXprinting the result to the screen is needed. XXXXXXXXXXXXXXXXXXXXXX check saving to disks as well
+These methods can accept arbitrary input, meaning that they can be applied to any data
+that is located on either the host or device.
 
+Here is an example that demonstrates the use of both methods:
 ```
->> import numpy as np
->> import cupy as cp
->> x_cpu = np.array([1, 2, 3])
->> l2_cpu = np.linalg.norm(x_cpu)
->> x_gpu = cp.array([1 ,2 ,3])
->> l2_gpu = cp.linalg.norm(x_gpu)
->> # copy l2_gpu from GPU to CPU for e.g. XXXXXXXXXXXXX
->> l2_cpu = cp.asnumpy(l2_gpu)
+x_cpu = np.array([1, 2, 3])
+y_cpu = np.array([4, 5, 6])
+x_cpu + y_cpu
+array([5, 7, 9])
+
+x_gpu = cp.asarray(x_cpu) # move x to gpu
+x_gpu + y_cpu # now it should fail
+
+Traceback (most recent call last):
+TypeError: Unsupported type <class 'numpy.ndarray'>
+
+cp.asnumpy(x_gpu) + y_cpu 
+array([5, 7, 9])
+cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
+array([5, 7, 9])
+x_gpu + cp.asarray(y_cpu)
+array([5, 7, 9])
+cp.asarray(x_gpu) + cp.asarray(y_cpu)
+array([5, 7, 9])
 ```
-
-
-Note that converting between cupy.ndarray and numpy.ndarray incurs data transfer between the host (CPU) device and the GPU device, which is costly in terms of performance.
 
 :::{note}
+Converting between cupy.ndarray and numpy.ndarray incurs data transfer
+between the host (CPU) device and the GPU device,
+which is costly in terms of performance.
+
 The device will be called <CUDA Device 0> even if you are on AMD GPUs.
 :::
+
+#### Current Device
+
+CuPy has a concept of a current device, which is the default GPU device
+on which the allocation, manipulation, calculation, etc., of arrays take place.
+Suppose ID of the current device is 0. In such a case,
+the following code would create an array x_on_gpu0 on GPU 0.
+```
+x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
+```
+
+To switch to another GPU device, use the `Device` context manager:
+```
+with cp.cuda.Device(1):
+   x_on_gpu1 = cp.array([1, 2, 3, 4, 5])
+x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
+```
+
+All CuPy operations (except for multi-GPU features and device-to-device copy)
+are performed on the currently active device.
+
+In general, CuPy functions expect that the array is on the same device as the current one.
+Passing an array stored on a non-current device may work depending on
+the hardware configuration but is generally discouraged as it may not be performant.
+
+## Exercises: Matrix Multiplication
+
+:::{exercise} Exercise : Matrix Multiplication
+The first example is a simple matrix multiplication in single precision (float32).
+The arrays are created with random values in the range of -1.0 to 1.0.
+Convert the NumPy code to run on GPU using CuPy.
+
+```
+import math
+import numpy as np
+ 
+A = np.random.uniform(low=-1., high=1., size(64,64)).astype(np.float32)
+B = np.random.uniform(low=-1., high=1., size(64,64)).astype(np.float32)
+C = np.matmul(A,B)
+```
+:::
+
+:::{solution}
+```
+import math
+import cupy as cp
+ 
+A = cp.random.uniform(low=-1., high=1., size(64,64)).astype(cp.float32)
+B = cp.random.uniform(low=-1., high=1., size(64,64)).astype(cp.float32)
+C = cp.matmul(A,B)
+```
+
+Notice in this snippet of code that the variable C remains on the GPU.
+You have to copy it back to the CPU explicitly if needed.
+Otherwise all the data on the GPU is wiped once the code ends.
+
+:::
+
+
+### CuPy vs Numpy/SciPy
+
+
+Although the CuPy team focuses on providing a complete
+NumPy/SciPy API coverage to become a full drop-in replacement,
+some important differences between CuPy and NumPy should be noted,
+one should keep these differences in mind when porting NumPy code to CuPy.
+
+- Some casting behaviors from floating point to integer
+are not defined in the C++ specification. The casting
+from a negative floating point to an unsigned integer
+and from infinity to an integer are examples.
+- CuPy random methods support the dtype argument.
+- Out-of-bounds indices and duplicate values in indices are handled differently.
+- Reduction methods return zero-dimension arrays.
+
 
 ## User-Defined Kernels
 
@@ -494,29 +590,6 @@ xp = cp.get_array_module(dev_a) # Returns cupy if any array is on the GPU, other
 y = xp.sin(dev_a) + xp.cos(dev_a)
 ```
 
-When you need to manipulate CPU and GPU arrays, an explicit data transfer may be required to move them to the same location – either CPU or GPU. For this purpose, CuPy implements two sister methods called cupy.asnumpy() and cupy.asarray(). Here is an example that demonstrates the use of both methods:
-```
-x_cpu = np.array([1, 2, 3])
-y_cpu = np.array([4, 5, 6])
-x_cpu + y_cpu
-array([5, 7, 9])
-
-x_gpu = cp.asarray(x_cpu)
-x_gpu + y_cpu
-Traceback (most recent call last):
-...
-TypeError: Unsupported type <class 'numpy.ndarray'>
-
-cp.asnumpy(x_gpu) + y_cpu
-array([5, 7, 9])
-cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
-array([5, 7, 9])
-x_gpu + cp.asarray(y_cpu)
-array([5, 7, 9])
-cp.asarray(x_gpu) + cp.asarray(y_cpu)
-array([5, 7, 9])
-```
-The cupy.asnumpy() method returns a NumPy array (array on the host), whereas cupy.asarray() method returns a CuPy array (array on the current device). Both methods can accept arbitrary input, meaning that they can be applied to any data that is located on either the host or device and can be converted to an array.
 
 
 :::{note}
