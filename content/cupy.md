@@ -139,7 +139,7 @@ In general, CuPy functions expect that the array is on the same device as the cu
 Passing an array stored on a non-current device may work depending on
 the hardware configuration but is generally discouraged as it may not be performant.
 
-## Exercises: Matrix Multiplication
+### Exercises: Matrix Multiplication
 
 :::{exercise} Exercise : Matrix Multiplication
 The first example is a simple matrix multiplication in single precision (float32).
@@ -171,6 +171,41 @@ You have to copy it back to the CPU explicitly if needed.
 Otherwise all the data on the GPU is wiped once the code ends.
 
 :::
+
+
+### Exercises: moving data from GPU to CPU
+
+:::{exercise} Exercise : moving data from GPU to CPU
+The code snippet simply computes a singular value decomposition (SVD)
+of a matrix. In this case, the matrix is a
+single-precision 64x64 matrix of random values. First re-write the code
+using CuPy for GPU enabling. Second, adding a few lines to
+copy variable u back to CPU and print the data type.
+```
+import numpy as np
+ 
+A = np.random.uniform(low=-1., high=1., size=(64, 64)).astype(np.float32)
+u, s, v = np.linalg.svd(A)
+```
+:::
+
+:::{solution}
+```
+import cupy as cp
+ 
+A = cp.random.uniform(low=-1., high=1., size=(64, 64)).astype(cp.float32)
+u_gpu, s_gpu, v_gpu = cp.linalg.svd(A)
+print "type(u_gpu) = ",type(u_gpu)
+u_cpu = cp.asnumpy(u_gpu)
+print "type(u_cpu) = ",type(u_cpu)
+```
+
+Notice in this snippet of code that the variable C remains on the GPU.
+You have to copy it back to the CPU explicitly if needed.
+Otherwise all the data on the GPU is wiped once the code ends.
+
+:::
+
 
 
 ### CuPy vs Numpy/SciPy
