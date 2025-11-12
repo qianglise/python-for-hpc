@@ -471,9 +471,23 @@ CuPy implements standard APIs for data exchange and interoperability, such as  _
 
 Note that the return type of these operations is still consistent with the initial type
 
-> [!NOTE]
-> __array_ufunc__ feature requires NumPy 1.13 or later.
-> __array_function__ feature requires NumPy 1.16 or later; As of NumPy 1.17, __array_function__ is enabled by default.
+```
+import cupy as cp
+import numpy as np
+
+arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
+result = np.sum(arr)
+print(type(result))  # => <class 'cupy._core.core.ndarray'>
+```
+
+:::{note}
+`__array_ufunc__` feature requires NumPy 1.13 or later
+
+`__array_function__` feature requires NumPy 1.16 or later
+
+As of NumPy 1.17, `__array_function__` is enabled by default
+:::
+
 :::{discussion}
 Discuss the following.
 
