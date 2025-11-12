@@ -46,16 +46,6 @@ most having the same API as NumPy/SciPy.
 Let us take a look at the following code snippet which calculates the L2-norm of an array.
 Note how simple it is to run on a GPU device using CuPy, i.e. essentially by changing np to cp.
 
-```
->> import numpy as np
->> import cupy as cp
->> x_cpu = np.array([1, 2, 3])
->> l2_cpu = np.linalg.norm(x_cpu)
->> x_gpu = cp.array([1 ,2 ,3])
->> l2_gpu = cp.linalg.norm(x_gpu)
-```
-
-
 
 <table>
 <tr>
@@ -89,7 +79,7 @@ l2_gpu = cp.linalg.norm(x_gpu)
 Do not change the import line
 in the code to something like
 
-`import cupy as np`,
+`import cupy as np`
 
 which can cause problems if you need to use
 NumPy code and not CuPy code.
@@ -114,6 +104,9 @@ that is located on either the host or device.
 
 Here is an example that demonstrates the use of both methods:
 ```
+import numpy as np
+import cupy as cp
+
 x_cpu = np.array([1, 2, 3])
 y_cpu = np.array([4, 5, 6])
 x_cpu + y_cpu
