@@ -11,10 +11,9 @@
 - Be able to copy data from host to device memory and vice versa
 - Be able to profile a simple function
   and estimate the speed-up by using GPU
--
+- Be able to re-write a simple NumPy/SciPy 
+  function using CuPy to run on the GPUs
 
-This is also a holdover from the carpentries-style.  It could
-usually be left off.
 :::
 
 
@@ -55,6 +54,35 @@ Note how simple it is to run on a GPU device using CuPy, i.e. essentially by cha
 >> x_gpu = cp.array([1 ,2 ,3])
 >> l2_gpu = cp.linalg.norm(x_gpu)
 ```
+
+
+
+<table>
+<tr>
+<th>NumPy</th>
+<th>CuPy</th>
+</tr>
+<tr>
+<td>
+  
+```
+import numpy as np
+x_cpu = np.array([1, 2, 3])
+l2_cpu = np.linalg.norm(x_cpu)
+```
+  
+</td>
+<td>
+
+```
+import cupy as cp
+x_gpu = cp.array([1 ,2 ,3])
+l2_gpu = cp.linalg.norm(x_gpu)
+```
+
+</td>
+</tr>
+</table>
 
 :::{warning}
 
