@@ -7,6 +7,7 @@
 :::
 
 :::{objectives}
+- Learn the basics of CuPy
 - Be able to find out if a variable is stored in the CPU or GPU memory
 - Be able to copy data from host to device memory and vice versa
 - Be able to profile a simple function
@@ -138,12 +139,22 @@ The device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
 #### Current Device
 
-CuPy has a concept of a current device, which is the default GPU device
-on which the allocation, manipulation, calculation, etc., of arrays take place.
+CuPy introduces the concept of a `current device`, 
+which represents the default GPU device on which 
+the allocation, manipulation, calculation, etc., 
+of arrays take place. cupy.ndarray.device attribute 
+can be used to determine the device allocated to a CuPy array.
 Suppose ID of the current device is 0. In such a case,
 the following code would create an array x_on_gpu0 on GPU 0.
+
 ```
 x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
+```
+To obtain the total number of accessible devices, 
+one can utilize the getDeviceCount function
+
+```
+cupy.cuda.runtime.getDeviceCount()
 ```
 
 To switch to another GPU device, use the `Device` context manager:
@@ -156,9 +167,11 @@ x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
 All CuPy operations (except for multi-GPU features and device-to-device copy)
 are performed on the currently active device.
 
-In general, CuPy functions expect that the array is on the same device as the current one.
-Passing an array stored on a non-current device may work depending on
-the hardware configuration but is generally discouraged as it may not be performant.
+In general, CuPy functions expect that 
+the array is on the same device as the current one.
+Passing an array stored on a non-current 
+device may work depending on the hardware configuration 
+but is generally discouraged as it may not be performant.
 
 ### Exercises: Matrix Multiplication
 
@@ -729,7 +742,7 @@ hint of what comes next.
 
 ## See also
 
-
+- [CuPy Homepage](https://docs.cupy.dev/en/stable/index.html)
 - [GPU programming: When, Why and How?](https://enccs.github.io/gpu-programming)
 
 
