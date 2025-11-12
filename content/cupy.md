@@ -1,16 +1,17 @@
 # CUPY
 
 :::{questions}
-- What syntax is used to make a lesson?
-- How do you structure a lesson effectively for teaching?
-- `questions` are at the top of a lesson and provide a starting
-  point for what you might learn.  It is usually a bulleted list.
+- How could I make my Python code to run on a GPU
+- How do I copy data to the GPU memory
+- 
 :::
 
 :::{objectives}
-- Show a complete lesson page with all of the most common
-  structures.
-- ...
+- Be able to find out if a variable is stored in the CPU or GPU memory
+- Be able to copy data from host to device memory and vice versa
+- Be able to profile a simple function
+  and estimate the speed-up by using GPU
+...
 
 This is also a holdover from the carpentries-style.  It could
 usually be left off.
@@ -78,7 +79,7 @@ Although cupy.ndarray is the CuPy counterpart of NumPy numpy.ndarray, the main d
 - To convert numpy.ndarray to cupy.ndarray, use cupy.array() or cupy.asarray()
 - To convert cupy.ndarray to numpy.ndarray, use cupy.asnumpy() or cupy.ndarray.get()
 
-As in the above example, the variable l2_gpu remains on the GPU. One has to copy the variable back to the CPU explicitly e.g. if printing the result to the screen is needed.
+As in the above example, notice that the variable l2_gpu actually remains on the GPU. One has to copy the variable back to the CPU explicitly e.g. if XXXXXXXXXXXprinting the result to the screen is needed. XXXXXXXXXXXXXXXXXXXXXX check saving to disks as well
 
 ```
 >> import numpy as np
@@ -87,7 +88,7 @@ As in the above example, the variable l2_gpu remains on the GPU. One has to copy
 >> l2_cpu = np.linalg.norm(x_cpu)
 >> x_gpu = cp.array([1 ,2 ,3])
 >> l2_gpu = cp.linalg.norm(x_gpu)
->> # copy l2_gpu from GPU to CPU for e.g. printing
+>> # copy l2_gpu from GPU to CPU for e.g. XXXXXXXXXXXXX
 >> l2_cpu = cp.asnumpy(l2_gpu)
 ```
 
@@ -108,13 +109,167 @@ with CuPy only require a small snippet of C++,
 and CuPy automatically wraps and compiles it.
 Compiled binaries are then cached and reused in subsequent runs.
 
-CuPy has four types of custom kernels:
+
+CuPy provides three types of user-defined kernels:
 
 - cupy.ElementwiseKernel: User-defined elementwise kernel
 - cupy.ReductionKernel: User-defined reduction kernel
 - cupy.RawKernel: User-defined custom kernel
-- cupy.fuse: Decorator that fuses a function
+#- cupy.fuse: Decorator that fuses a function
 
+### ElementwiseKernel
+
+The element-wise kernel focuses on kernels that operate on an element-wise basis.
+An element-wise kernel has four components:
+   - input argument list
+   - output argument list
+   - function code
+   - kernel name
+
+The argument lists consist of comma-separated argument definitions.
+Each argument definition consists of a type specifier and an argument name.
+Names of NumPy data types can be used as type specifiers.
+
+```
+>>> kernel = cp.ElementwiseKernel(
+...     'float32 x, float32 y', 'float32 z',
+...     '''if (x - 2 > y) {
+...       z = x * y;
+...     } else {
+...       z = x + y;
+...     }''', 'my_kernel')
+
+kernel = cp.ElementwiseKernel(
+   'float32 x, float32 y',
+   'float32 z',
+   'z = (x - y) * (x - y)',
+   'my_kernel')
+```
+
+In the first line, the object instantiation is named `kernel`.
+The next line has the variables to be used as input (x and y) and output (z).
+These variables can be typed with NumPy data types, as shown.
+The function code then follows. The last line states the kernel name,
+which is `my_kernel`, in this case.
+
+The above kernel can be called on either scalars or arrays
+since the ElementwiseKernel class does the indexing with broadcasting automatically:
+
+```
+x = cp.arange(10, dtype=np.float32).reshape(2, 5)
+y = cp.arange(5, dtype=np.float32)
+squared_diff(x, y)
+array([[ 0.,  0.,  0.,  0.,  0.],
+       [25., 25., 25., 25., 25.]], dtype=float32)
+squared_diff(x, 5)
+array([[25., 16.,  9.,  4.,  1.],
+       [ 0.,  1.,  4.,  9., 16.]], dtype=float32)
+```
+
+Sometimes it would be nice to create a generic kernel that can handle multiple data types.
+CuPy allows this with the use of a type placeholder.
+The above `my_kernel` can be made type-generic as follows:
+
+```
+>>> kernel = cp.ElementwiseKernel(
+...     'T x, T y', 'T z',
+...     '''if (x - 2 > y) {
+...       z = x * y;
+...     } else {
+...       z = x + y;
+...     }''', 'my_kernel')
+
+kernel = cp.ElementwiseKernel(
+   'T x, T y',
+   'T z',
+   'z = (x - y) * (x - y)',
+   'my_kernel')
+```
+
+If a type specifier is one character, T in this case, it is treated as a **type placeholder**.
+Same character in the kernel definition indicates the same type.
+More than one type placeholder can be used in a kernel definition. 
+The actual type of these placeholders is determined by the actual argument type.
+The ElementwiseKernel class first checks the output arguments and then
+the input arguments to determine the actual type. If no output arguments are given
+on the kernel invocation, only the input arguments are used to determine the type.
+
+```
+squared_diff_super_generic = cp.ElementwiseKernel(
+    'X x, Y y',
+    'Z z',
+    'z = (x - y) * (x - y)',
+    'squared_diff_super_generic')
+```
+Note that this kernel requires the output argument to be explicitly specified,
+because the type Z cannot be automatically determined from the input arguments X and Y.
+
+### ReductionKernel
+
+The second type of CuPy custom kernel is the reduction kernel,
+which is focused on kernels of the Map-Reduce type.
+The ReductionKernel class has four extra parts:
+
+   - Identity value: Initial value of the reduction
+   - Mapping expression: Pre-processes each element to be reduced
+   - Reduction expression: An operator to reduce the multiple mapped values.
+     Two special variables, a and b, are used for this operand
+   - Post-mapping expression: Transforms the resulting reduced values.
+     The special variable a is used as input. The output should be written to the output variable
+
+Here is an example to compute L2 norm along specified axies:
+```
+l2norm_kernel = cp.ReductionKernel(
+    'T x',  # input params
+    'T y',  # output params
+    'x * x',  # map
+    'a + b',  # reduce
+    'y = sqrt(a)',  # post-reduction map
+    '0',  # identity value
+    'l2norm'  # kernel name
+)
+
+x = cp.arange(10, dtype=np.float32).reshape(2, 5)
+l2norm_kernel(x, axis=1)
+array([ 5.477226 , 15.9687195], dtype=float32)
+```
+
+### RawKernel
+
+The last is the RawKernel class, which is used to define kernels from raw CUDA/HIP XXXXXXX source.
+
+RawKernel object allows you to call the kernel with CUDA's cuLaunchKernel interface,
+and this gives you control of e.g. the grid size, block size, shared memory size, and stream.
+
+```
+add_kernel = cp.RawKernel(r'''
+extern "C" __global__
+void my_add(const float* x1, const float* x2, float* y) {
+    int tid = blockDim.x * blockIdx.x + threadIdx.x;
+    y[tid] = x1[tid] + x2[tid];
+}
+''', 'my_add')
+
+x1 = cp.arange(25, dtype=cp.float32).reshape(5, 5)
+x2 = cp.arange(25, dtype=cp.float32).reshape(5, 5)
+y = cp.zeros((5, 5), dtype=cp.float32)
+add_kernel((5,), (5,), (x1, x2, y))  # grid, block and arguments
+y
+array([[ 0.,  2.,  4.,  6.,  8.],
+       [10., 12., 14., 16., 18.],
+       [20., 22., 24., 26., 28.],
+       [30., 32., 34., 36., 38.],
+       [40., 42., 44., 46., 48.]], dtype=float32)
+```       
+
+:::{note}
+The kernel does not have return values. You need to pass both input arrays and output arrays as arguments.
+
+When using printf() in your GPU kernel, you may need to synchronize the stream to see the output.
+
+The kernel is declared in an extern "C" block, indicating that the C linkage is used.
+This is to ensure the kernel names are not mangled so that they can be retrieved by name.
+:::
 
 ## CuPy vs Numpy/SciPy
 
@@ -194,13 +349,9 @@ CuPy’s __setitem__ behaves differently from NumPy when integer arrays referenc
 
 ```
 a = cupy.zeros((2,))
-
 i = cupy.arange(10000) % 2
-
 v = cupy.arange(10000).astype(np.float32)
-
 a[i] = v
-
 a  
 array([ 9150.,  9151.])
 ```
@@ -209,13 +360,9 @@ NumPy stores the value corresponding to the last element among elements referenc
 
 ```
 a_cpu = np.zeros((2,))
-
 i_cpu = np.arange(10000) % 2
-
 v_cpu = np.arange(10000).astype(np.float32)
-
 a_cpu[i_cpu] = v_cpu
-
 a_cpu
 array([9998., 9999.])
 ```
@@ -372,13 +519,14 @@ hint of what comes next.
 
 - Other relevant links
 - Other link
+- GPU programming
 
 
 
 :::{keypoints}
-- What the learner should take away
-- point 2
-- ...
+- GPUs have massive computing power compared to CPU
+- CuPy is a good first step to start 
+- Fine-tuning for optimal performance of real-world applications can be tedioius
 
 This is another holdover from the carpentries style.  This perhaps
 is better done in a "summary" section.
