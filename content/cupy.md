@@ -715,7 +715,9 @@ hint of what comes next.
 
 :::{keypoints}
 - GPUs have massive computing power compared to CPU
-- CuPy is a good first step to start 
+- CuPy is a good first step to start
+- CuPy provides GPU accelerated version of many NumPy and Scipy functions
+- Always have both the CPU and GPU versions of your code available so that you can compare performance, as well as validate the results
 - Fine-tuning for optimal performance of real-world applications can be tedioius
 
 :::
