@@ -475,10 +475,58 @@ Note that the return type of these operations is still consistent with the initi
 import cupy as cp
 import numpy as np
 
-arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
-result = np.sum(arr)
+dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
+result = np.sum(dev_arr)
 print(type(result))  # => <class 'cupy._core.core.ndarray'>
 ```
+
+### CPU/GPU agnostic code
+CuPy's compatibility with NumPy makes it possible to write CPU/GPU agnostic code.
+For this purpose, CuPy implements the cupy.get_array_module() function that
+returns a reference to cupy if any of its arguments resides on a GPU and numpy otherwise.
+
+Here is an example of a CPU/GPU agnostic function
+```
+import numpy as np
+import cupy as cp
+# Easy to transfer arrays between device and the host
+a = np.arange(0, 20, 2)
+dev_a = cp.asarray(a)
+# GPU/CPU agnostic code also works with CuPy
+xp = cp.get_array_module(dev_a) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
+y = xp.sin(dev_a) + xp.cos(dev_a)
+```
+
+When you need to manipulate CPU and GPU arrays, an explicit data transfer may be required to move them to the same location – either CPU or GPU. For this purpose, CuPy implements two sister methods called cupy.asnumpy() and cupy.asarray(). Here is an example that demonstrates the use of both methods:
+```
+x_cpu = np.array([1, 2, 3])
+
+y_cpu = np.array([4, 5, 6])
+
+x_cpu + y_cpu
+array([5, 7, 9])
+
+x_gpu = cp.asarray(x_cpu)
+
+x_gpu + y_cpu
+Traceback (most recent call last):
+...
+TypeError: Unsupported type <class 'numpy.ndarray'>
+
+cp.asnumpy(x_gpu) + y_cpu
+array([5, 7, 9])
+
+cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
+array([5, 7, 9])
+
+x_gpu + cp.asarray(y_cpu)
+array([5, 7, 9])
+
+cp.asarray(x_gpu) + cp.asarray(y_cpu)
+array([5, 7, 9])
+```
+The cupy.asnumpy() method returns a NumPy array (array on the host), whereas cupy.asarray() method returns a CuPy array (array on the current device). Both methods can accept arbitrary input, meaning that they can be applied to any data that is located on either the host or device and can be converted to an array.
+
 
 :::{note}
 `__array_ufunc__` feature requires NumPy 1.13 or later
