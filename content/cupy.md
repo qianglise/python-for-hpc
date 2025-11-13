@@ -37,8 +37,8 @@ making code porting much easier.
 
 CuPy's syntax here is identical to that of NumPy. A list of
 NumPy/SciPy APIs and its corresponding CuPy implementations
-is summarised
-[here](https://docs.cupy.dev/en/stable/reference/comparison.html#comparison-table).
+is summarised here:
+[Complete Comparison of NumPy and SciPy to CuPy functions](https://docs.cupy.dev/en/stable/reference/comparison.html#comparison-table).
 
 In short, CuPy provides N-dimensional array (ndarray),
 sparse matrices, and the associated routines for GPU devices,
@@ -730,24 +730,24 @@ False
 ```
 
 
-:::{discussion}
-Discuss the following.
-
-- A discussion section
-- Another discussion topic
-:::
-
-
-
-
 ## Summary
 
-In this chapter, we have learned about:
+In this episode, we have learned about:
 
 - CuPy basics
 - Moving data between the CPU and GPU devices
-- 
+- Different ways to launch GPU kernels
 
+
+
+:::{keypoints}
+- GPUs have massive computing power compared to CPU
+- CuPy is a good first step to start
+- CuPy provides an extensive collection of GPU array functions
+- Always have both the CPU and GPU versions of your code available
+  so that you can compare performance, as well as validate the results
+- Fine-tuning for optimal performance of real-world applications can be tedioius
+:::
 
 
 ## See also
@@ -756,12 +756,3 @@ In this chapter, we have learned about:
 - [GPU programming: When, Why and How?](https://enccs.github.io/gpu-programming)
 
 
-
-:::{keypoints}
-- GPUs have massive computing power compared to CPU
-- CuPy is a good first step to start
-- CuPy provides GPU accelerated version of many NumPy and Scipy functions
-- Always have both the CPU and GPU versions of your code available so that you can compare performance, as well as validate the results
-- Fine-tuning for optimal performance of real-world applications can be tedioius
-
-:::
