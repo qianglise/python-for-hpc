@@ -18,6 +18,7 @@
 :::
 
 
+## Introduction to CuPy
 
 Another excellent tool for writing Python code to run on GPUs is CuPy.
 CuPy is a NumPy/SciPy-compatible array library for
@@ -270,14 +271,18 @@ and from infinity to an integer are examples.
 
 ## Interoperability
 
-### NumPy
 CuPy implements standard APIs for data exchange and interoperability,
-such as `__array_ufunc__` interface (see NEP 13 —
+which means it can be used in conjunction with any other libraries supporting the standard.
+For example, NumPy, Numba, PyTorch, TensorFlow, MPI4Py among others
+can be directly operated on CuPy arrays.
+
+### NumPy
+CuPy implements `__array_ufunc__` interface (see NEP 13 —
 A Mechanism for Overriding Ufuncs for details),
 `__array_function__` interface (see NEP 18 —
 A dispatch mechanism for NumPy’s high level array functions for details),
 and other [Python Array API Standard](https://data-apis.org/array-api/latest).
-This enables e.g. NumPy, Numba among others to be directly operated on CuPy arrays.
+
 
 Note that the return type of these operations is still consistent with the initial type.
 
@@ -303,7 +308,9 @@ As of NumPy 1.17, `__array_function__` is enabled by default
 
 `cupy.ndarray` implements `__cuda_array_interface__`,
 which is the CUDA array interchange interface compatible with
-Numba v0.39.0 or later (see CUDA Array Interface for details).
+Numba v0.39.0 or later (see [CUDA Array Interface]
+(https://numba.readthedocs.io/en/stable/cuda/cuda_array_interface.html)
+for details).
 It means you can pass CuPy arrays to kernels JITed with Numba.
 
 ```
@@ -769,5 +776,5 @@ In this episode, we have learned about:
 
 - [CuPy Homepage](https://docs.cupy.dev/en/stable/index.html)
 - [GPU programming: When, Why and How?](https://enccs.github.io/gpu-programming)
-
+- [CUDA Python from Nvidia](https://nvidia.github.io/cuda-python/latest)
 
