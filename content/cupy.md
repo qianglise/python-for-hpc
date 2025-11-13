@@ -133,8 +133,6 @@ array([5, 7, 9])
 Converting between cupy.ndarray and numpy.ndarray incurs data transfer
 between the host (CPU) device and the GPU device,
 which is costly in terms of performance.
-
-The device will be called <CUDA Device 0> even if you are on AMD GPUs.
 :::
 
 #### Current Device
@@ -151,30 +149,36 @@ the following code would create an array x_on_gpu0 on GPU 0.
 x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
 ```
 To obtain the total number of accessible devices, 
-one can utilize the getDeviceCount function
-
+one can utilize the getDeviceCount function:
 ```
 cupy.cuda.runtime.getDeviceCount()
 ```
 
-To switch to another GPU device, use the `Device` context manager:
+To switch to another GPU device, use the `Device` context manager.
+For example, the following code snippet creates an array on GPU 1:
 ```
+import cupy as cp
+
 with cp.cuda.Device(1):
-   x_on_gpu1 = cp.array([1, 2, 3, 4, 5])
+   x_gpu1 = cp.array([1, 2, 3, 4, 5])
 
-print("x_on_gpu1 is on device:" x_on_gpu1.device)
-
-x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
+print("x_gpu1 is on device:" x_gpu1.device)
 ```
 
-All CuPy operations (except for multi-GPU features and device-to-device copy)
-are performed on the currently active device.
+All CuPy operations (except for multi-GPU features
+and device-to-device copy) are performed
+on the currently active device.
+
+:::{note}
+The device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
 In general, CuPy functions expect that 
-the array is on the same device as the current one.
+the data array is on the current device.
+
 Passing an array stored on a non-current 
 device may work depending on the hardware configuration 
 but is generally discouraged as it may not be performant.
+:::
 
 ### Exercises: Matrix Multiplication
 
@@ -738,8 +742,11 @@ Discuss the following.
 
 ## Summary
 
-A Summary of what you learned and why it might be useful.  Maybe a
-hint of what comes next.
+In this chapter, we have learned about:
+
+- CuPy basics
+- Moving data between the CPU and GPU devices
+- 
 
 
 
