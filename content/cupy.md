@@ -306,12 +306,10 @@ As of NumPy 1.17, `__array_function__` is enabled by default
 
 ### Numba
 
-`cupy.ndarray` implements `__cuda_array_interface__`,
-which is the CUDA array interchange interface compatible with
-Numba v0.39.0 or later (see [CUDA Array Interface]
-(https://numba.readthedocs.io/en/stable/cuda/cuda_array_interface.html)
-for details).
-It means you can pass CuPy arrays to kernels JITed with Numba.
+CuPy implements `__cuda_array_interface__`
+which is compatible with Numba v0.39.0 or later
+(see [CUDA Array Interface](https://numba.readthedocs.io/en/stable/cuda/cuda_array_interface.html)
+for details). It means one can pass CuPy arrays to kernels JITed with Numba.
 
 ```
 import cupy
