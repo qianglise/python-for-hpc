@@ -1,4 +1,4 @@
-# CUPY
+# CuPy
 
 :::{questions}
 - How could I make my Python code to run on a GPU
@@ -38,6 +38,7 @@ making code porting much easier.
 CuPy's syntax here is identical to that of NumPy. A list of
 NumPy/SciPy APIs and its corresponding CuPy implementations
 is summarised here:
+
 [Complete Comparison of NumPy and SciPy to CuPy functions](https://docs.cupy.dev/en/stable/reference/comparison.html#comparison-table).
 
 In short, CuPy provides N-dimensional array (ndarray),
@@ -340,7 +341,9 @@ x_cupy = cupy.asarray(x_numba)  # type: cupy.ndarray
 
 ### CPU/GPU agnostic code
 
-CuPy's compatibility with NumPy makes it possible to write CPU/GPU agnostic code.
+Once beginning porting code to the GPU, one has to
+consider how to handle creating data on either the CPU or GPU.
+CuPy's compatibility with NumPy/SciPy makes it possible to write CPU/GPU agnostic code.
 For this purpose, CuPy implements the cupy.get_array_module() function that
 returns a reference to cupy if any of its arguments resides on a GPU and numpy otherwise.
 
@@ -348,7 +351,7 @@ Here is an example of a CPU/GPU agnostic function
 ```
 import numpy as np
 import cupy as cp
-# Easy to transfer arrays between device and the host
+# create an array and copy it to GPU
 a = np.arange(0, 20, 2)
 dev_a = cp.asarray(a)
 # GPU/CPU agnostic code also works with CuPy
@@ -356,7 +359,19 @@ xp = cp.get_array_module(dev_a) # Returns cupy if any array is on the GPU, other
 y = xp.sin(dev_a) + xp.cos(dev_a)
 ```
 
+```
+xp = cp.get_array_module(x)
+xp.linspace(0, 2, 5)
 
+def addone(x):
+    xp = cp.get_array_module(x)
+    print("Using:", xp.__name__)
+    return x+1
+
+# Calls and Output
+print(addone(x_cpu))
+print(addone(x_gpu))
+```
 
 
 
