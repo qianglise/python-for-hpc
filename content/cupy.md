@@ -277,8 +277,8 @@ For example, NumPy, Numba, PyTorch, TensorFlow, MPI4Py among others
 can be directly operated on CuPy arrays.
 
 ### NumPy
-CuPy implements `__array_ufunc__` interface (see NEP 13 —
-A Mechanism for Overriding Ufuncs for details),
+CuPy implements `__array_ufunc__` interface [(NEP 13)]
+(https://numpy.org/neps/nep-0013-ufunc-overrides.html),
 `__array_function__` interface (see NEP 18 —
 A dispatch mechanism for NumPy’s high level array functions for details),
 and other [Python Array API Standard](https://data-apis.org/array-api/latest).
@@ -302,6 +302,10 @@ print(type(result))  # => <class 'cupy._core.core.ndarray'>
 `__array_function__` feature requires NumPy 1.16 or later
 
 As of NumPy 1.17, `__array_function__` is enabled by default
+
+NEP 13 — A mechanism for overriding Ufuncs
+
+NEP 18 — A dispatch mechanism for NumPy’s high level array functions
 :::
 
 ### Numba
