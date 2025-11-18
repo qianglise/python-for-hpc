@@ -10,8 +10,8 @@
 - Learn the basics of CuPy
 - Be able to find out if a variable is stored in the CPU or GPU memory
 - Be able to copy data from host to device memory and vice versa
-- Be able to profile a simple function
-  and estimate the speed-up by using GPU
+<!-- - Be able to profile a simple function
+  and estimate the speed-up by using GPU -->
 - Be able to re-write a simple NumPy/SciPy 
   function using CuPy to run on the GPUs
 
@@ -391,19 +391,17 @@ Sometimes you need a specific GPU function or routine
 that is not provided by an existing library or tool.
 In these situation, you need to write a "custom kernel",
 i.e. a user-defined GPU kernel. Custom kernels written
-with CuPy only require a small snippet of C++,
+with CuPy only require a small snippet of code
 and CuPy automatically wraps and compiles it.
 Compiled binaries are then cached and reused in subsequent runs.
 
 
-CuPy provides three types of user-defined kernels:
+CuPy provides three templates of user-defined kernels:
 
 - cupy.ElementwiseKernel: User-defined elementwise kernel
 - cupy.ReductionKernel: User-defined reduction kernel
-- cupy.RawKernel: User-defined custom kernel
+- cupy.RawKernel: User-defined CUDA/HIP kernel
 
-
-<!-- cupy.fuse: Decorator that fuses a function -->
 
 ### ElementwiseKernel
 
@@ -559,6 +557,45 @@ The kernel is declared in an extern "C" block, indicating that the C linkage is 
 This is to ensure the kernel names are not mangled so that they can be retrieved by name.
 :::
 
+
+### cupy.fuse decorator
+
+Apart from using the above templates for custom kernels,
+CuPy provides the cupy.fuse decorator which "fuse" the
+custom kernel functions to a single kernel function, therefore
+creating a dramatic lowering of the launching overhead.
+Moreover, the syntax looks like a Numba decorator, it is
+much easier to define an elementwise or reduction kernel
+than using the ElementwiseKernel or ReductionKernel template.
+
+However, it is still experimental, i.e. there are bugs and
+incomplete functionalities to be fixed.
+
+Here is the example using cupy.fuse() decorator
+```
+@cupy.fuse(kernel_name='squared_diff')
+def squared_diff(x, y):
+    return (x - y) * (x - y)
+
+x = cupy.arange(10)
+y = cupy.arange(10)[::-1]
+
+squared_diff(x, y)
+array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
+```
+
+### Low-level features
+
+In addition to custom kernels, accessing low-level CUDA/HIP features
+are available for those who need more fine-grain control for performance:
+
+- Stream and Event: CUDA stream and per-thread default stream are supported by all APIs
+- Memory Pool: Customizable memory allocator with a built-in memory pool
+- Profiler: Supports profiling code using CUDA Profiler and NVTX
+- Host API Binding: Directly call CUDA libraries, such as NCCL, cuDNN, cuTENSOR, and cuSPARSELt APIs from Python
+
+
+
 ## CuPy vs Numpy/SciPy
 
 
@@ -567,6 +604,7 @@ NumPy/SciPy API coverage to become a full drop-in replacement,
 some important differences between CuPy and NumPy should be noted,
 one should keep these differences in mind when porting NumPy code to CuPy.
 
+<!--
 - Some casting behaviors from floating point to integer
 are not defined in the C++ specification. The casting
 from a negative floating point to an unsigned integer
@@ -574,8 +612,9 @@ and from infinity to an integer are examples.
 - CuPy random methods support the dtype argument.
 - Out-of-bounds indices and duplicate values in indices are handled differently.
 - Reduction methods return zero-dimension arrays.
+-->
 
-
+Here is various examples illustrating the differences:
 
 ### Cast behavior from float to integer
 
