@@ -3,18 +3,16 @@
 :::{questions}
 - How could I make my Python code to run on a GPU
 - How do I copy data to the GPU memory
-- 
 :::
 
 :::{objectives}
 - Learn the basics of CuPy
 - Be able to find out if a variable is stored in the CPU or GPU memory
 - Be able to copy data from host to device memory and vice versa
-<!-- - Be able to profile a simple function
-  and estimate the speed-up by using GPU -->
 - Be able to re-write a simple NumPy/SciPy 
   function using CuPy to run on the GPUs
-
+<!-- - Be able to profile a simple function
+  and estimate the speed-up by using GPU -->
 :::
 
 
@@ -614,7 +612,7 @@ and from infinity to an integer are examples.
 - Reduction methods return zero-dimension arrays.
 -->
 
-Here is various examples illustrating the differences:
+Here are various examples illustrating the differences:
 
 ### Cast behavior from float to integer
 
