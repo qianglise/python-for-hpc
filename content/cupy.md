@@ -127,7 +127,38 @@ x_gpu + cp.asarray(y_cpu)
 array([5, 7, 9])
 cp.asarray(x_gpu) + cp.asarray(y_cpu)
 array([5, 7, 9])
+
+
+>>> import numpy as np
+>>> import cupy as cp
+>>> x_cpu = np.array([1, 2, 3])
+>>> y_cpu = np.array([4, 5, 6])
+>>> x_cpu + y_cpu
+array([5, 7, 9])
+>>>
+>>> x_gpu = cp.asarray(x_cpu) # move x to gpu
+>>> x_gpu + y_cpu # now it should fail
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "cupy/_core/core.pyx", line 1375, in cupy._core.core._ndarray_base.__add__
+  File "cupy/_core/core.pyx", line 1799, in cupy._core.core._ndarray_base.__array_ufunc__
+  File "cupy/_core/_kernel.pyx", line 1285, in cupy._core._kernel.ufunc.__call__
+  File "cupy/_core/_kernel.pyx", line 159, in cupy._core._kernel._preprocess_args
+  File "cupy/_core/_kernel.pyx", line 145, in cupy._core._kernel._preprocess_arg
+TypeError: Unsupported type <class 'numpy.ndarray'>
+>>> 
+>>> cp.asnumpy(x_gpu) + y_cpu 
+array([5, 7, 9])
+>>> cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
+array([5, 7, 9])
+>>> x_gpu + cp.asarray(y_cpu)
+array([5, 7, 9])
+>>> cp.asarray(x_gpu) + cp.asarray(y_cpu)
+array([5, 7, 9])
+
 ```
+
+
 
 :::{note}
 Converting between cupy.ndarray and numpy.ndarray incurs data transfer
@@ -152,6 +183,8 @@ To obtain the total number of accessible devices,
 one can utilize the getDeviceCount function:
 ```
 cupy.cuda.runtime.getDeviceCount()
+>>> cp.cuda.runtime.getDeviceCount()
+1
 ```
 
 To switch to another GPU device, use the `Device` context manager.
@@ -191,8 +224,8 @@ Convert the NumPy code to run on GPU using CuPy.
 import math
 import numpy as np
  
-A = np.random.uniform(low=-1., high=1., size(64,64)).astype(np.float32)
-B = np.random.uniform(low=-1., high=1., size(64,64)).astype(np.float32)
+A = np.random.uniform(low=-1., high=1., size=(64,64)).astype(np.float32)
+B = np.random.uniform(low=-1., high=1., size=(64,64)).astype(np.float32)
 C = np.matmul(A,B)
 ```
 :::
@@ -202,8 +235,8 @@ C = np.matmul(A,B)
 import math
 import cupy as cp
  
-A = cp.random.uniform(low=-1., high=1., size(64,64)).astype(cp.float32)
-B = cp.random.uniform(low=-1., high=1., size(64,64)).astype(cp.float32)
+A = cp.random.uniform(low=-1., high=1., size=(64,64)).astype(cp.float32)
+B = cp.random.uniform(low=-1., high=1., size=(64,64)).astype(cp.float32)
 C = cp.matmul(A,B)
 ```
 
@@ -236,9 +269,9 @@ import cupy as cp
  
 A = cp.random.uniform(low=-1., high=1., size=(64, 64)).astype(cp.float32)
 u_gpu, s_gpu, v_gpu = cp.linalg.svd(A)
-print "type(u_gpu) = ",type(u_gpu)
+print("type(u_gpu) = ",type(u_gpu))
 u_cpu = cp.asnumpy(u_gpu)
-print "type(u_cpu) = ",type(u_cpu)
+print("type(u_cpu) = ",type(u_cpu))
 ```
 
 Notice in this snippet of code that the variable C remains on the GPU.
@@ -291,6 +324,11 @@ import numpy as np
 dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
 result = np.sum(dev_arr)
 print(type(result))  # => <class 'cupy._core.core.ndarray'>
+
+>>> dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
+>>> result = np.sum(dev_arr)
+>>> print(type(result))
+<class 'cupy.ndarray'>
 ```
 
 
@@ -423,11 +461,12 @@ Names of NumPy data types can be used as type specifiers.
 ...       z = x + y;
 ...     }''', 'my_kernel')
 
-kernel = cp.ElementwiseKernel(
-   'float32 x, float32 y',
-   'float32 z',
-   'z = (x - y) * (x - y)',
-   'my_kernel')
+>>> kernel = cp.ElementwiseKernel(
+...    'float32 x, float32 y',
+...    'float32 z',
+...    'z = (x - y) * (x - y)',
+...    'my_kernel')
+
 ```
 
 In the first line, the object instantiation is named `kernel`.
@@ -448,6 +487,17 @@ array([[ 0.,  0.,  0.,  0.,  0.],
 squared_diff(x, 5)
 array([[25., 16.,  9.,  4.,  1.],
        [ 0.,  1.,  4.,  9., 16.]], dtype=float32)
+
+>>> x = cp.arange(10, dtype=np.float32).reshape(2, 5)
+>>> y = cp.arange(5, dtype=np.float32)
+>>> 
+>>> kernel(x,y)
+array([[ 0.,  0.,  0.,  0.,  0.],
+       [25., 25., 25., 25., 25.]], dtype=float32)
+>>> kernel(x,5)
+array([[25., 16.,  9.,  4.,  1.],
+       [ 0.,  1.,  4.,  9., 16.]], dtype=float32)
+
 ```
 
 Sometimes it would be nice to create a generic kernel that can handle multiple data types.
@@ -455,7 +505,7 @@ CuPy allows this with the use of a type placeholder.
 The above `my_kernel` can be made type-generic as follows:
 
 ```
->>> kernel = cp.ElementwiseKernel(
+>>> kernel_generic = cp.ElementwiseKernel(
 ...     'T x, T y', 'T z',
 ...     '''if (x - 2 > y) {
 ...       z = x * y;
@@ -463,11 +513,11 @@ The above `my_kernel` can be made type-generic as follows:
 ...       z = x + y;
 ...     }''', 'my_kernel')
 
-kernel = cp.ElementwiseKernel(
+kernel_generic = cp.ElementwiseKernel(
    'T x, T y',
    'T z',
    'z = (x - y) * (x - y)',
-   'my_kernel')
+   'my_kernel_generic')
 ```
 
 If a type specifier is one character, T in this case, it is treated as a **type placeholder**.
@@ -503,7 +553,7 @@ The ReductionKernel class has four extra parts:
 
 Here is an example to compute L2 norm along specified axies:
 ```
-l2norm_kernel = cp.ReductionKernel(
+>>> l2norm_kernel = cp.ReductionKernel(
     'T x',  # input params
     'T y',  # output params
     'x * x',  # map
@@ -511,11 +561,19 @@ l2norm_kernel = cp.ReductionKernel(
     'y = sqrt(a)',  # post-reduction map
     '0',  # identity value
     'l2norm'  # kernel name
-)
+    )
 
 x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 l2norm_kernel(x, axis=1)
 array([ 5.477226 , 15.9687195], dtype=float32)
+
+>>> x = cp.arange(10, dtype=np.float32).reshape(2, 5)
+>>> x
+array([[0., 1., 2., 3., 4.],
+       [5., 6., 7., 8., 9.]], dtype=float32)
+>>> l2norm_kernel(x, axis=1)
+array([ 5.477226 , 15.9687195], dtype=float32)
+
 ```
 
 ### RawKernel
@@ -544,6 +602,34 @@ array([[ 0.,  2.,  4.,  6.,  8.],
        [20., 22., 24., 26., 28.],
        [30., 32., 34., 36., 38.],
        [40., 42., 44., 46., 48.]], dtype=float32)
+
+
+>>> x1
+array([[ 0.,  1.,  2.,  3.,  4.],
+       [ 5.,  6.,  7.,  8.,  9.],
+       [10., 11., 12., 13., 14.],
+       [15., 16., 17., 18., 19.],
+       [20., 21., 22., 23., 24.]], dtype=float32)
+>>> x2
+array([[ 0.,  1.,  2.,  3.,  4.],
+       [ 5.,  6.,  7.,  8.,  9.],
+       [10., 11., 12., 13., 14.],
+       [15., 16., 17., 18., 19.],
+       [20., 21., 22., 23., 24.]], dtype=float32)
+>>> y
+array([[0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0.]], dtype=float32)
+>>> add_kernel((5,), (5,), (x1, x2, y))
+>>> y
+array([[ 0.,  2.,  4.,  6.,  8.],
+       [10., 12., 14., 16., 18.],
+       [20., 22., 24., 26., 28.],
+       [30., 32., 34., 36., 38.],
+       [40., 42., 44., 46., 48.]], dtype=float32)
+
 ```       
 
 :::{note}
@@ -571,15 +657,23 @@ incomplete functionalities to be fixed.
 
 Here is the example using cupy.fuse() decorator
 ```
-@cupy.fuse(kernel_name='squared_diff')
+import cupy as cp
+
+@cp.fuse(kernel_name='squared_diff')
 def squared_diff(x, y):
     return (x - y) * (x - y)
 
-x = cupy.arange(10)
-y = cupy.arange(10)[::-1]
+x = cp.arange(10)
+y = cp.arange(10)[::-1]
 
 squared_diff(x, y)
 array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
+
+>>> x = cp.arange(10)
+>>> y = cp.arange(10)[::-1]
+>>> squared_diff(x, y)
+array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
+
 ```
 
 ### Low-level features
@@ -622,7 +716,7 @@ Some casting behaviors from float to integer are not defined in C++ specificatio
 np.array([-1], dtype=np.float32).astype(np.uint32)
 array([4294967295], dtype=uint32)
 
-cupy.array([-1], dtype=np.float32).astype(np.uint32)
+cp.array([-1], dtype=np.float32).astype(np.uint32)
 array([0], dtype=uint32)
 ```
 
@@ -630,7 +724,7 @@ array([0], dtype=uint32)
 np.array([float('inf')], dtype=np.float32).astype(np.int32)
 array([-2147483648], dtype=int32)
 
-cupy.array([float('inf')], dtype=np.float32).astype(np.int32)
+cp.array([float('inf')], dtype=np.float32).astype(np.int32)
 array([2147483647], dtype=int32)
 ```
 
@@ -644,8 +738,16 @@ Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 TypeError: randn() got an unexpected keyword argument 'dtype'
 
-cupy.random.randn(dtype=np.float32)    
+cp.random.randn(dtype=np.float32)    
 array(0.10689262300729752, dtype=float32)
+
+
+>>> np.random.randn(dtype=np.float32)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: randn() got an unexpected keyword argument 'dtype'
+>>> cp.random.randn(dtype=np.float32)  
+array(1.3591791, dtype=float32)
 ```
 
 ### Out-of-bounds indices
@@ -666,16 +768,30 @@ x[[1, 3]] = 10
 
 x
 array([10, 10,  2])
+
+
+>>> x[[1, 3]] = 10
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+IndexError: index 3 is out of bounds for axis 0 with size 3
+
+>>> x = cp.array([0, 1, 2])
+>>> x[[1, 3]]
+array([1, 0])
+>>> x[[1, 3]] = 10
+>>> x
+array([10, 10,  2])
+
 ```
 
 ### Duplicate values in indices
 
-CuPy’s __setitem__ behaves differently from NumPy when integer arrays reference the same location multiple times. In that case, the value that is actually stored is undefined. Here is an example of CuPy.
+CuPy's __setitem__ behaves differently from NumPy when integer arrays reference the same location multiple times. In that case, the value that is actually stored is undefined. Here is an example of CuPy.
 
 ```
-a = cupy.zeros((2,))
-i = cupy.arange(10000) % 2
-v = cupy.arange(10000).astype(np.float32)
+a = cp.zeros((2,))
+i = cp.arange(10000) % 2
+v = cp.arange(10000).astype(np.float32)
 a[i] = v
 a  
 array([ 9150.,  9151.])
@@ -692,23 +808,40 @@ a_cpu
 array([9998., 9999.])
 ```
 
+
+```
+>>> a_cpu = np.zeros((2,))
+>>> i_cpu = np.arange(10000) % 2
+>>> v_cpu = np.arange(10000).astype(np.float32)
+>>> a_cpu[i_cpu] = v_cpu
+>>> a_cpu
+array([9998., 9999.])
+>>> a = cp.zeros((2,))
+>>> i = cp.arange(10000) % 2
+>>> v = cp.arange(10000).astype(np.float32)
+>>> a[i] = v
+>>> a  
+array([4592., 4593.])
+
+```
+
 ### Zero-dimensional array
 
 Reduction methods
 
-NumPy’s reduction functions (e.g. numpy.sum()) return scalar values (e.g. numpy.float32). However CuPy counterparts return zero-dimensional cupy.ndarray s. That is because CuPy scalar values (e.g. cupy.float32) are aliases of NumPy scalar values and are allocated in CPU memory. If these types were returned, it would be required to synchronize between GPU and CPU. If you want to use scalar values, cast the returned arrays explicitly.
+NumPy's reduction functions (e.g. numpy.sum()) return scalar values (e.g. numpy.float32). However CuPy counterparts return zero-dimensional cupy.ndarray s. That is because CuPy scalar values (e.g. cupy.float32) are aliases of NumPy scalar values and are allocated in CPU memory. If these types were returned, it would be required to synchronize between GPU and CPU. If you want to use scalar values, cast the returned arrays explicitly.
 
 ```
 type(np.sum(np.arange(3))) == np.int64
 True
 
-type(cupy.sum(cupy.arange(3))) == cupy.ndarray
+type(cp.sum(cp.arange(3))) == cp.ndarray
 True
 ```
 
 Type promotion
 
-CuPy automatically promotes dtypes of cupy.ndarray s in a function with two or more operands, the result dtype is determined by the dtypes of the inputs. This is different from NumPy’s rule on type promotion, when operands contain zero-dimensional arrays. Zero-dimensional numpy.ndarray s are treated as if they were scalar values if they appear in operands of NumPy’s function, This may affect the dtype of its output, depending on the values of the “scalar” inputs.
+CuPy automatically promotes dtypes of cupy.ndarray s in a function with two or more operands, the result dtype is determined by the dtypes of the inputs. This is different from NumPy's rule on type promotion, when operands contain zero-dimensional arrays. Zero-dimensional numpy.ndarray s are treated as if they were scalar values if they appear in operands of NumPy's function, This may affect the dtype of its output, depending on the values of the "scalar" inputs.
 
 ```
 (np.array(3, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
@@ -717,8 +850,13 @@ dtype('float32')
 (np.array(300000, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
 dtype('float64')
 
-(cupy.array(3, dtype=np.int32) * cupy.array([1., 2.], dtype=np.float32)).dtype
+(cp.array(3, dtype=np.int32) * cp.array([1., 2.], dtype=np.float32)).dtype
 dtype('float64')
+
+################## not working
+>>> (np.array(3, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
+dtype('float64')
+
 ```
 
 ### Matrix type (numpy.matrix)
@@ -739,27 +877,39 @@ Unlike NumPy, Universal Functions in CuPy only work with CuPy array or scalar. T
 np.power([np.arange(5)], 2)
 array([[ 0,  1,  4,  9, 16]])
 
-cupy.power([cupy.arange(5)], 2)
+cp.power([cp.arange(5)], 2)
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 TypeError: Unsupported type <class 'list'>
+
+>>> np.power([np.arange(5)], 2)
+array([[ 0,  1,  4,  9, 16]])
+>>> cp.power([cp.arange(5)], 2)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "cupy/_core/_kernel.pyx", line 1285, in cupy._core._kernel.ufunc.__call__
+  File "cupy/_core/_kernel.pyx", line 159, in cupy._core._kernel._preprocess_args
+  File "cupy/_core/_kernel.pyx", line 145, in cupy._core._kernel._preprocess_arg
+TypeError: Unsupported type <class 'list'>
+
+
 ```
 
 ### Random seed arrays are hashed to scalars
 
-Like Numpy, CuPy’s RandomState objects accept seeds either as numbers or as full numpy arrays.
+Like Numpy, CuPy's RandomState objects accept seeds either as numbers or as full numpy arrays.
 
 ```
 seed = np.array([1, 2, 3, 4, 5])
 
-rs = cupy.random.RandomState(seed=seed)
+rs = cp.random.RandomState(seed=seed)
 ```
 
 However, unlike Numpy, array seeds will be hashed down to a single number and so may not communicate as much entropy to the underlying random number generator.
 
 ### NaN (not-a-number) handling
 
-By default CuPy’s reduction functions (e.g., cupy.sum()) handle NaNs in complex numbers differently from NumPy’s counterparts:
+By default CuPy's reduction functions (e.g., cupy.sum()) handle NaNs in complex numbers differently from NumPy’s counterparts:
 
 ```
 a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
@@ -770,13 +920,30 @@ print(a_np.max(), a_np.min())
 a_cp = cp.asarray(a_np)
 print(a_cp.max(), a_cp.min())
 (nan-3.9j) (nan-3.9j)
+
+
+################## not working
+>>> a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
+>>> a
+[(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
+>>> a_np = np.asarray(a)
+>>> a
+[(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
+>>> a_np
+array([0.5+3.7j, 0.7+nanj, nan-3.9j, nan+nanj])
+>>> print(a_np.max(), a_np.min())
+(0.7+nanj) (0.7+nanj)
+>>> a_cp = cp.asarray(a_np)
+>>> print(a_cp.max(), a_cp.min())
+(0.7+nanj) (0.7+nanj)
+
 ```
 
-The reason is that internally the reduction is performed in a strided fashion, thus it does not ensure a proper comparison order and cannot follow NumPy’s rule to always propagate the first-encountered NaN. Note that this difference does not apply when CUB is enabled (which is the default for CuPy v11 or later.)
+The reason is that internally the reduction is performed in a strided fashion, thus it does not ensure a proper comparison order and cannot follow NumPy's rule to always propagate the first-encountered NaN. Note that this difference does not apply when CUB is enabled (which is the default for CuPy v11 or later.)
 
 ### Contiguity / Strides
 
-To provide the best performance, the contiguity of a resulting ndarray is not guaranteed to match with that of NumPy’s output.
+To provide the best performance, the contiguity of a resulting ndarray is not guaranteed to match with that of NumPy's output.
 
 ```
 a = np.array([[1, 2], [3, 4]], order='F')
@@ -788,6 +955,21 @@ True
 a = cp.array([[1, 2], [3, 4]], order='F')
 print((a + a).flags.f_contiguous)
 False
+
+
+>>> a = np.array([[1, 2], [3, 4]], order='F')
+>>> a
+array([[1, 2],
+       [3, 4]])
+>>> print((a + a).flags.f_contiguous)
+True
+>>> a = cp.array([[1, 2], [3, 4]], order='F')
+>>> a
+array([[1, 2],
+       [3, 4]])
+>>> print((a + a).flags.f_contiguous)
+False
+
 ```
 
 
