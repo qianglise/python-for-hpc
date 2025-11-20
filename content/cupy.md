@@ -169,10 +169,10 @@ To switch to another GPU device, use the `Device` context manager.
 For example, the following code snippet creates an array on GPU 1:
 ```
 >>> import cupy as cp
-
+>>>
 >>> with cp.cuda.Device(1):
        x_gpu1 = cp.array([1, 2, 3, 4, 5])
-
+>>>
 >>> print("x_gpu1 is on device:" x_gpu1.device)
 ```
 
@@ -231,7 +231,7 @@ The code snippet simply computes a singular value decomposition (SVD)
 of a matrix. In this case, the matrix is a
 single-precision 64x64 matrix of random values. First re-write the code
 using CuPy for GPU enabling. Second, adding a few lines to
-copy variable u back to CPU and print the data type.
+copy variable u back to CPU and print objects' type using `type()` function.
 ```
 import numpy as np
  
@@ -331,12 +331,11 @@ def add(x, y, out):
 
 a = cp.arange(10)
 b = a * 2
-out = cp.zeros_like(a)
 
+out = cp.zeros_like(a)
 print(out)  # => [0 0 0 0 0 0 0 0 0 0]
 
 add[1, 32](a, b, out)
-
 print(out)  # => [ 0  3  6  9 12 15 18 21 24 27]
 ```
 
@@ -384,6 +383,26 @@ print(addone(a_cpu))
 print(addone(a_gpu))
 ```
 
+```
+>>> import numpy as np
+>>> import cupy as cp
+>>> def addone(x):
+...     xp = cp.get_array_module(x) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
+...     print("Using:", xp.__name__)
+...     return x+1
+... 
+>>> # create an array and copy it to GPU
+>>> a_cpu = np.arange(0, 20, 2)
+>>> a_gpu = cp.asarray(a_cpu)
+>>> # GPU/CPU agnostic code also works with CuPy
+>>> print(addone(a_cpu))
+Using: numpy
+[ 1  3  5  7  9 11 13 15 17 19]
+>>> print(addone(a_gpu))
+Using: cupy
+[ 1  3  5  7  9 11 13 15 17 19]
+```
+
 ## User-Defined Kernels
 
 Sometimes you need a specific GPU function or routine
@@ -416,20 +435,11 @@ Each argument definition consists of a type specifier and an argument name.
 Names of NumPy data types can be used as type specifiers.
 
 ```
->>> kernel = cp.ElementwiseKernel(
-...     'float32 x, float32 y', 'float32 z',
-...     '''if (x - 2 > y) {
-...       z = x * y;
-...     } else {
-...       z = x + y;
-...     }''', 'my_kernel')
-
->>> kernel = cp.ElementwiseKernel(
+>>> my_kernel = cp.ElementwiseKernel(
 ...    'float32 x, float32 y',
 ...    'float32 z',
 ...    'z = (x - y) * (x - y)',
 ...    'my_kernel')
-
 ```
 
 In the first line, the object instantiation is named `kernel`.
@@ -450,7 +460,6 @@ my_kernel = cp.ElementwiseKernel(
    'float32 z',
    'z = (x - y) * (x - y)',
    'my_kernel')
-
 
 x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 y = cp.arange(5, dtype=np.float32)
@@ -485,14 +494,6 @@ CuPy allows this with the use of a type placeholder.
 The above `my_kernel` can be made type-generic as follows:
 
 ```
->>> my_kernel_generic = cp.ElementwiseKernel(
-...     'T x, T y', 'T z',
-...     '''if (x - 2 > y) {
-...       z = x * y;
-...     } else {
-...       z = x + y;
-...     }''', 'my_kernel')
-
 my_kernel_generic = cp.ElementwiseKernel(
    'T x, T y',
    'T z',
@@ -552,11 +553,6 @@ Here is an example to compute L2 norm along specified axies:
     '0',  # identity value
     'l2norm'  # kernel name
     )
-
-x = cp.arange(10, dtype=np.float32).reshape(2, 5)
-l2norm_kernel(x, axis=1)
-array([ 5.477226 , 15.9687195], dtype=float32)
-
 >>> x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 >>> x
 array([[0., 1., 2., 3., 4.],
@@ -591,26 +587,19 @@ array([[ 0.,  2.,  4.,  6.,  8.],
        [20., 22., 24., 26., 28.],
        [30., 32., 34., 36., 38.],
        [40., 42., 44., 46., 48.]], dtype=float32)
+```
 
-
->>> x1
-array([[ 0.,  1.,  2.,  3.,  4.],
-       [ 5.,  6.,  7.,  8.,  9.],
-       [10., 11., 12., 13., 14.],
-       [15., 16., 17., 18., 19.],
-       [20., 21., 22., 23., 24.]], dtype=float32)
->>> x2
-array([[ 0.,  1.,  2.,  3.,  4.],
-       [ 5.,  6.,  7.,  8.,  9.],
-       [10., 11., 12., 13., 14.],
-       [15., 16., 17., 18., 19.],
-       [20., 21., 22., 23., 24.]], dtype=float32)
->>> y
-array([[0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0.],
-       [0., 0., 0., 0., 0.]], dtype=float32)
+```
+>>> add_kernel = cp.RawKernel(r'''
+... extern "C" __global__
+... void my_add(const float* x1, const float* x2, float* y) {
+...     int tid = blockDim.x * blockIdx.x + threadIdx.x;
+...     y[tid] = x1[tid] + x2[tid];
+... }
+... ''', 'my_add')
+>>> x1 = cp.arange(25, dtype=cp.float32).reshape(5, 5)
+>>> x2 = cp.arange(25, dtype=cp.float32).reshape(5, 5)
+>>> y = cp.zeros((5, 5), dtype=cp.float32)
 >>> add_kernel((5,), (5,), (x1, x2, y))
 >>> y
 array([[ 0.,  2.,  4.,  6.,  8.],
@@ -712,17 +701,17 @@ Some casting behaviors from float to integer are not defined in C++ specificatio
 
 ```
 np.array([-1], dtype=np.float32).astype(np.uint32)
-array([4294967295], dtype=uint32)
+# array([4294967295], dtype=uint32)
 
 cp.array([-1], dtype=np.float32).astype(np.uint32)
-array([0], dtype=uint32)
+# array([0], dtype=uint32)
 ```
 
-```
-np.array([float('inf')], dtype=np.float32).astype(np.int32)
+```python
+>>> np.array([float('inf')], dtype=np.float32).astype(np.int32)
 array([-2147483648], dtype=int32)
 
-cp.array([float('inf')], dtype=np.float32).astype(np.int32)
+>>> cp.array([float('inf')], dtype=np.float32).astype(np.int32)
 array([2147483647], dtype=int32)
 ```
 
@@ -738,8 +727,9 @@ TypeError: randn() got an unexpected keyword argument 'dtype'
 
 cp.random.randn(dtype=np.float32)    
 array(0.10689262300729752, dtype=float32)
+```
 
-
+```
 >>> np.random.randn(dtype=np.float32)
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
@@ -766,20 +756,20 @@ x[[1, 3]] = 10
 
 x
 array([10, 10,  2])
+```
 
-
+```
+>>> x = np.array([0, 1, 2])
 >>> x[[1, 3]] = 10
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 IndexError: index 3 is out of bounds for axis 0 with size 3
-
 >>> x = cp.array([0, 1, 2])
 >>> x[[1, 3]]
 array([1, 0])
 >>> x[[1, 3]] = 10
 >>> x
 array([10, 10,  2])
-
 ```
 
 ### Duplicate values in indices
