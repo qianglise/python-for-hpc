@@ -105,35 +105,12 @@ that is located on either the host or device.
 
 Here is an example that demonstrates the use of both methods:
 ```
-import numpy as np
-import cupy as cp
-
-x_cpu = np.array([1, 2, 3])
-y_cpu = np.array([4, 5, 6])
-x_cpu + y_cpu
-array([5, 7, 9])
-
-x_gpu = cp.asarray(x_cpu) # move x to gpu
-x_gpu + y_cpu # now it should fail
-
-Traceback (most recent call last):
-TypeError: Unsupported type <class 'numpy.ndarray'>
-
-cp.asnumpy(x_gpu) + y_cpu 
-array([5, 7, 9])
-cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
-array([5, 7, 9])
-x_gpu + cp.asarray(y_cpu)
-array([5, 7, 9])
-cp.asarray(x_gpu) + cp.asarray(y_cpu)
-array([5, 7, 9])
-
-
 >>> import numpy as np
 >>> import cupy as cp
->>> x_cpu = np.array([1, 2, 3])
->>> y_cpu = np.array([4, 5, 6])
->>> x_cpu + y_cpu
+>>>
+>>> x_cpu = np.array([1, 2, 3]) # allocating array x on cpu
+>>> y_cpu = np.array([4, 5, 6]) # allocating array y on cpu
+>>> x_cpu + y_cpu # add x and y
 array([5, 7, 9])
 >>>
 >>> x_gpu = cp.asarray(x_cpu) # move x to gpu
@@ -147,7 +124,7 @@ Traceback (most recent call last):
   File "cupy/_core/_kernel.pyx", line 145, in cupy._core._kernel._preprocess_arg
 TypeError: Unsupported type <class 'numpy.ndarray'>
 >>> 
->>> cp.asnumpy(x_gpu) + y_cpu 
+>>> cp.asnumpy(x_gpu) + y_cpu
 array([5, 7, 9])
 >>> cp.asnumpy(x_gpu) + cp.asnumpy(y_cpu)
 array([5, 7, 9])
@@ -155,7 +132,6 @@ array([5, 7, 9])
 array([5, 7, 9])
 >>> cp.asarray(x_gpu) + cp.asarray(y_cpu)
 array([5, 7, 9])
-
 ```
 
 
@@ -173,16 +149,18 @@ which represents the default GPU device on which
 the allocation, manipulation, calculation, etc., 
 of arrays take place. cupy.ndarray.device attribute 
 can be used to determine the device allocated to a CuPy array.
-Suppose ID of the current device is 0. In such a case,
-the following code would create an array x_on_gpu0 on GPU 0.
+By default, ID of the current device is 0. 
 
 ```
-x_on_gpu0 = cp.array([1, 2, 3, 4, 5])
+>>> import cupy as cp
+>>> x_gpu = cp.array([1, 2, 3, 4, 5])
+>>> x_gpu.device
+<CUDA Device 0>
 ```
 To obtain the total number of accessible devices, 
-one can utilize the getDeviceCount function:
+one can utilize the `getDeviceCount` function:
 ```
-cupy.cuda.runtime.getDeviceCount()
+>>> import cupy as cp
 >>> cp.cuda.runtime.getDeviceCount()
 1
 ```
@@ -273,11 +251,6 @@ print("type(u_gpu) = ",type(u_gpu))
 u_cpu = cp.asnumpy(u_gpu)
 print("type(u_cpu) = ",type(u_cpu))
 ```
-
-Notice in this snippet of code that the variable C remains on the GPU.
-You have to copy it back to the CPU explicitly if needed.
-Otherwise all the data on the GPU is wiped once the code ends.
-
 :::
 
 
