@@ -169,10 +169,8 @@ To switch to another GPU device, use the `Device` context manager.
 For example, the following code snippet creates an array on GPU 1:
 ```
 >>> import cupy as cp
->>>
 >>> with cp.cuda.Device(1):
        x_gpu1 = cp.array([1, 2, 3, 4, 5])
->>>
 >>> print("x_gpu1 is on device:" x_gpu1.device)
 ```
 
@@ -270,7 +268,52 @@ and from infinity to an integer are examples.
 - Out-of-bounds indices and duplicate values in indices are handled differently.
 - Reduction methods return zero-dimension arrays.
 
+:::{solution}
+### Random seed arrays are hashed to scalars
 
+Like Numpy, CuPy's RandomState objects accept seeds either as numbers or as full numpy arrays.
+
+```
+seed = np.array([1, 2, 3, 4, 5])
+
+rs = cp.random.RandomState(seed=seed)
+```
+
+However, unlike Numpy, array seeds will be hashed down to a single number and so may not communicate as much entropy to the underlying random number generator.
+
+### NaN (not-a-number) handling
+
+By default CuPy's reduction functions (e.g., cupy.sum()) handle NaNs in complex numbers differently from NumPy’s counterparts:
+
+```
+a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
+a_np = np.asarray(a)
+print(a_np.max(), a_np.min())
+(0.7+nanj) (0.7+nanj)
+
+a_cp = cp.asarray(a_np)
+print(a_cp.max(), a_cp.min())
+(nan-3.9j) (nan-3.9j)
+
+
+################## not working
+>>> a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
+>>> a
+[(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
+>>> a_np = np.asarray(a)
+>>> a
+[(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
+>>> a_np
+array([0.5+3.7j, 0.7+nanj, nan-3.9j, nan+nanj])
+>>> print(a_np.max(), a_np.min())
+(0.7+nanj) (0.7+nanj)
+>>> a_cp = cp.asarray(a_np)
+>>> print(a_cp.max(), a_cp.min())
+(0.7+nanj) (0.7+nanj)
+
+```
+
+:::
 
 ## Interoperability
 
@@ -879,8 +922,6 @@ Traceback (most recent call last):
   File "cupy/_core/_kernel.pyx", line 159, in cupy._core._kernel._preprocess_args
   File "cupy/_core/_kernel.pyx", line 145, in cupy._core._kernel._preprocess_arg
 TypeError: Unsupported type <class 'list'>
-
-
 ```
 
 ### Random seed arrays are hashed to scalars
