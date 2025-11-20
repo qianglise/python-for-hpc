@@ -345,13 +345,12 @@ Note that the return type of these operations is still consistent with the initi
 :::{note}
 `__array_ufunc__` feature requires NumPy 1.13 or later
 
-`__array_function__` feature requires NumPy 1.16 or later
-
+`__array_function__` feature requires NumPy 1.16 or later.
 As of NumPy 1.17, `__array_function__` is enabled by default
 
 NEP 13 — A mechanism for overriding Ufuncs
 
-NEP 18 — A dispatch mechanism for NumPy’s high level array functions
+NEP 18 — A dispatch mechanism for NumPy's high level array functions
 :::
 
 ### Numba
