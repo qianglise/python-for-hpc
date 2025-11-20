@@ -168,12 +168,12 @@ one can utilize the `getDeviceCount` function:
 To switch to another GPU device, use the `Device` context manager.
 For example, the following code snippet creates an array on GPU 1:
 ```
-import cupy as cp
+>>> import cupy as cp
 
-with cp.cuda.Device(1):
-   x_gpu1 = cp.array([1, 2, 3, 4, 5])
+>>> with cp.cuda.Device(1):
+       x_gpu1 = cp.array([1, 2, 3, 4, 5])
 
-print("x_gpu1 is on device:" x_gpu1.device)
+>>> print("x_gpu1 is on device:" x_gpu1.device)
 ```
 
 All CuPy operations (except for multi-GPU features
@@ -185,7 +185,6 @@ The device will be called <CUDA Device 0> even if you are on AMD GPUs.
 
 In general, CuPy functions expect that 
 the data array is on the current device.
-
 Passing an array stored on a non-current 
 device may work depending on the hardware configuration 
 but is generally discouraged as it may not be performant.
@@ -291,13 +290,8 @@ and other [Python Array API Standard](https://data-apis.org/array-api/latest).
 Note that the return type of these operations is still consistent with the initial type.
 
 ```
-import cupy as cp
-import numpy as np
-
-dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
-result = np.sum(dev_arr)
-print(type(result))  # => <class 'cupy._core.core.ndarray'>
-
+>>> import cupy as cp
+>>> import numpy as np
 >>> dev_arr = cp.random.randn(1, 2, 3, 4).astype(cp.float32)
 >>> result = np.sum(dev_arr)
 >>> print(type(result))
@@ -325,7 +319,7 @@ which is compatible with Numba v0.39.0 or later
 for details). It means one can pass CuPy arrays to kernels JITed with Numba.
 
 ```
-import cupy
+import cupy as cp
 from numba import cuda
 
 @cuda.jit
@@ -335,9 +329,9 @@ def add(x, y, out):
         for i in range(start, x.shape[0], stride):
                 out[i] = x[i] + y[i]
 
-a = cupy.arange(10)
+a = cp.arange(10)
 b = a * 2
-out = cupy.zeros_like(a)
+out = cp.zeros_like(a)
 
 print(out)  # => [0 0 0 0 0 0 0 0 0 0]
 
@@ -348,13 +342,18 @@ print(out)  # => [ 0  3  6  9 12 15 18 21 24 27]
 
 In addition, cupy.asarray() supports zero-copy conversion from Numba CUDA array to CuPy array.
 ```
-import numpy
-import numba
-import cupy
-
-x = numpy.arange(10)  # type: numpy.ndarray
-x_numba = numba.cuda.to_device(x)  # type: numba.cuda.cudadrv.devicearray.DeviceNDArray
-x_cupy = cupy.asarray(x_numba)  # type: cupy.ndarray
+>>> import numpy as np
+>>> import cupy as cp
+>>> import numba
+>>> x = np.arange(10)
+>>> type(x)
+<class 'numpy.ndarray'>
+>>> x_numba = numba.cuda.to_device(x)
+>>> type(x_numba)
+<class 'numba.cuda.cudadrv.devicearray.DeviceNDArray'>
+>>> x_cupy = cp.asarray(x_numba)
+>>> type(x_cupy)
+<class 'cupy.ndarray'>
 ```
 
 ### CPU/GPU agnostic code
@@ -369,30 +368,21 @@ Here is an example of a CPU/GPU agnostic function
 ```
 import numpy as np
 import cupy as cp
-# create an array and copy it to GPU
-a = np.arange(0, 20, 2)
-dev_a = cp.asarray(a)
-# GPU/CPU agnostic code also works with CuPy
-xp = cp.get_array_module(dev_a) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
-y = xp.sin(dev_a) + xp.cos(dev_a)
-```
 
-```
-xp = cp.get_array_module(x)
-xp.linspace(0, 2, 5)
-
+# define a simple function: f(x)=x+1
 def addone(x):
-    xp = cp.get_array_module(x)
+    xp = cp.get_array_module(x) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
     print("Using:", xp.__name__)
     return x+1
+    
+# create an array and copy it to GPU
+a_cpu = np.arange(0, 20, 2)
+a_gpu = cp.asarray(a_cpu)
 
-# Calls and Output
-print(addone(x_cpu))
-print(addone(x_gpu))
+# GPU/CPU agnostic code also works with CuPy
+print(addone(a_cpu))
+print(addone(a_gpu))
 ```
-
-
-
 
 ## User-Defined Kernels
 
@@ -452,25 +442,42 @@ The above kernel can be called on either scalars or arrays
 since the ElementwiseKernel class does the indexing with broadcasting automatically:
 
 ```
+import numpy as np
+import cupy as cp
+
+my_kernel = cp.ElementwiseKernel(
+   'float32 x, float32 y',
+   'float32 z',
+   'z = (x - y) * (x - y)',
+   'my_kernel')
+
+
 x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 y = cp.arange(5, dtype=np.float32)
-squared_diff(x, y)
+my_kernel(x, y)
 array([[ 0.,  0.,  0.,  0.,  0.],
        [25., 25., 25., 25., 25.]], dtype=float32)
-squared_diff(x, 5)
+my_kernel(x, 5)
 array([[25., 16.,  9.,  4.,  1.],
        [ 0.,  1.,  4.,  9., 16.]], dtype=float32)
 
+>>> import cupy as cp
+>>>
+>>> my_kernel = cp.ElementwiseKernel(
+...    'float32 x, float32 y',
+...    'float32 z',
+...    'z = (x - y) * (x - y)',
+...    'my_kernel')
+>>>
 >>> x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 >>> y = cp.arange(5, dtype=np.float32)
 >>> 
->>> kernel(x,y)
+>>> my_kernel(x,y)
 array([[ 0.,  0.,  0.,  0.,  0.],
        [25., 25., 25., 25., 25.]], dtype=float32)
->>> kernel(x,5)
+>>> my_kernel(x,5)
 array([[25., 16.,  9.,  4.,  1.],
        [ 0.,  1.,  4.,  9., 16.]], dtype=float32)
-
 ```
 
 Sometimes it would be nice to create a generic kernel that can handle multiple data types.
@@ -478,7 +485,7 @@ CuPy allows this with the use of a type placeholder.
 The above `my_kernel` can be made type-generic as follows:
 
 ```
->>> kernel_generic = cp.ElementwiseKernel(
+>>> my_kernel_generic = cp.ElementwiseKernel(
 ...     'T x, T y', 'T z',
 ...     '''if (x - 2 > y) {
 ...       z = x * y;
@@ -486,30 +493,38 @@ The above `my_kernel` can be made type-generic as follows:
 ...       z = x + y;
 ...     }''', 'my_kernel')
 
-kernel_generic = cp.ElementwiseKernel(
+my_kernel_generic = cp.ElementwiseKernel(
    'T x, T y',
    'T z',
    'z = (x - y) * (x - y)',
    'my_kernel_generic')
 ```
 
-If a type specifier is one character, T in this case, it is treated as a **type placeholder**.
-Same character in the kernel definition indicates the same type.
+If a type specifier is one character, T in this case,
+it is treated as a **type placeholder**. Same character
+in the kernel definition indicates the same type.
 More than one type placeholder can be used in a kernel definition. 
-The actual type of these placeholders is determined by the actual argument type.
-The ElementwiseKernel class first checks the output arguments and then
-the input arguments to determine the actual type. If no output arguments are given
-on the kernel invocation, only the input arguments are used to determine the type.
+The actual type of these placeholders is determined
+by the actual argument type. The ElementwiseKernel class
+first checks the output arguments and then the input arguments
+to determine the actual type. If no output arguments are given
+on the kernel invocation, only the input arguments
+are used to determine the type.
 
 ```
-squared_diff_super_generic = cp.ElementwiseKernel(
+my_kernel_generic = cp.ElementwiseKernel(
     'X x, Y y',
     'Z z',
     'z = (x - y) * (x - y)',
-    'squared_diff_super_generic')
+    'my_kernel_generic')
 ```
-Note that this kernel requires the output argument to be explicitly specified,
-because the type Z cannot be automatically determined from the input arguments X and Y.
+################## check this
+:::{note}
+This kernel requires the output argument to be explicitly specified,
+because the type Z cannot be automatically determined from
+the input arguments X and Y.
+:::
+
 
 ### ReductionKernel
 
@@ -526,6 +541,8 @@ The ReductionKernel class has four extra parts:
 
 Here is an example to compute L2 norm along specified axies:
 ```
+>>> import cupy as cp
+>>>
 >>> l2norm_kernel = cp.ReductionKernel(
     'T x',  # input params
     'T y',  # output params
@@ -546,7 +563,6 @@ array([[0., 1., 2., 3., 4.],
        [5., 6., 7., 8., 9.]], dtype=float32)
 >>> l2norm_kernel(x, axis=1)
 array([ 5.477226 , 15.9687195], dtype=float32)
-
 ```
 
 ### RawKernel
@@ -602,16 +618,18 @@ array([[ 0.,  2.,  4.,  6.,  8.],
        [20., 22., 24., 26., 28.],
        [30., 32., 34., 36., 38.],
        [40., 42., 44., 46., 48.]], dtype=float32)
-
 ```       
 
 :::{note}
-The kernel does not have return values. You need to pass both input arrays and output arrays as arguments.
+The kernel does not have return values. You need to pass
+both input arrays and output arrays as arguments.
 
-When using printf() in your GPU kernel, you may need to synchronize the stream to see the output.
+When using printf() in your GPU kernel, you may need to
+synchronize the stream to see the output.
 
-The kernel is declared in an extern "C" block, indicating that the C linkage is used.
-This is to ensure the kernel names are not mangled so that they can be retrieved by name.
+The kernel is declared in an extern "C" block,
+indicating that the C linkage is used. This is to ensure
+the kernel names are not mangled so that they can be retrieved by name.
 :::
 
 
@@ -636,17 +654,24 @@ import cupy as cp
 def squared_diff(x, y):
     return (x - y) * (x - y)
 
-x = cp.arange(10)
-y = cp.arange(10)[::-1]
+x = cp.arange(10,dtype=cp.float32)
+y = x[::-1]
 
 squared_diff(x, y)
 array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
+```
 
->>> x = cp.arange(10)
->>> y = cp.arange(10)[::-1]
+```
+>>> import cupy as cp
+>>> 
+>>> @cp.fuse(kernel_name='squared_diff')
+... def squared_diff(x, y):
+...     return (x - y) * (x - y)
+>>>
+>>> x = cp.arange(10,dtype=cp.float32)
+>>> y = x[::-1]
 >>> squared_diff(x, y)
 array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
-
 ```
 
 ### Low-level features
@@ -919,30 +944,19 @@ The reason is that internally the reduction is performed in a strided fashion, t
 To provide the best performance, the contiguity of a resulting ndarray is not guaranteed to match with that of NumPy's output.
 
 ```
-a = np.array([[1, 2], [3, 4]], order='F')
-print((a + a).flags.f_contiguous)
-True
-```
-
-```
-a = cp.array([[1, 2], [3, 4]], order='F')
-print((a + a).flags.f_contiguous)
-False
-
-
 >>> a = np.array([[1, 2], [3, 4]], order='F')
 >>> a
 array([[1, 2],
        [3, 4]])
 >>> print((a + a).flags.f_contiguous)
 True
+>>>
 >>> a = cp.array([[1, 2], [3, 4]], order='F')
 >>> a
 array([[1, 2],
        [3, 4]])
 >>> print((a + a).flags.f_contiguous)
 False
-
 ```
 
 
