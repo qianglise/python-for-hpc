@@ -254,26 +254,21 @@ print("type(u_cpu) = ",type(u_cpu))
 
 ### CuPy vs Numpy/SciPy
 
-
 Although the CuPy team focuses on providing a complete
 NumPy/SciPy API coverage to become a full drop-in replacement,
 some important differences between CuPy and NumPy should be noted,
 one should keep these differences in mind when porting NumPy code to CuPy.
 
-- Some casting behaviors from floating point to integer
-are not defined in the C++ specification. The casting
-from a negative floating point to an unsigned integer
-and from infinity to an integer are examples.
-- CuPy random methods support the dtype argument.
-- Out-of-bounds indices and duplicate values in indices are handled differently.
-- Reduction methods return zero-dimension arrays.
+:::{exercise} CuPy vs Numpy/SciPy
+Although the CuPy team focuses on providing a complete
+NumPy/SciPy API coverage to become a full drop-in replacement,
+some important differences between CuPy and NumPy should be noted,
+one should keep these differences in mind when porting NumPy code to CuPy.
 
-
-:::{exercise} When CuPy is different from NumPy/SciPy
 Here are various examples illustrating the differences
 :::
 
-:::{solution}
+:::{solution} When CuPy is different from NumPy/SciPy
 ### Random seed arrays are hashed to scalars
 
 Like Numpy, CuPy's RandomState objects accept seeds either as numbers or as full numpy arrays.
