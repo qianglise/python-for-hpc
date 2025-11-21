@@ -282,18 +282,10 @@ is one of such examples. The behavior of NumPy
 depends on your CPU architecture.
 This is the result on an Intel CPU:
 
-```
-np.array([-1], dtype=np.float32).astype(np.uint32)
-# array([4294967295], dtype=uint32)
-
-cp.array([-1], dtype=np.float32).astype(np.uint32)
-# array([0], dtype=uint32)
-```
-
 ```python
 >>> np.array([-1], dtype=np.float32).astype(np.uint32)
 array([4294967295], dtype=uint32)
->>>
+
 >>> cp.array([-1], dtype=np.float32).astype(np.uint32)
 array([0], dtype=uint32)
 ```
@@ -314,20 +306,11 @@ a float64 value. While in CuPy, both
 float32 and float64 are supported because of cuRAND.
 
 ```
-np.random.randn(dtype=np.float32)
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-TypeError: randn() got an unexpected keyword argument 'dtype'
-
-cp.random.randn(dtype=np.float32)    
-array(0.10689262300729752, dtype=float32)
-```
-
-```
 >>> np.random.randn(dtype=np.float32)
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 TypeError: randn() got an unexpected keyword argument 'dtype'
+
 >>> cp.random.randn(dtype=np.float32)  
 array(1.3591791, dtype=float32)
 ```
@@ -338,21 +321,6 @@ CuPy handles out-of-bounds indices differently
 by default from NumPy when using integer array indexing.
 NumPy handles them by raising an error, but CuPy wraps around them.
 
-```
-x = np.array([0, 1, 2])
-
-x[[1, 3]] = 10
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-IndexError: index 3 is out of bounds for axis 1 with size 3
-
-x = cupy.array([0, 1, 2])
-
-x[[1, 3]] = 10
-
-x
-array([10, 10,  2])
-```
 
 ```
 >>> x = np.array([0, 1, 2])
@@ -360,6 +328,7 @@ array([10, 10,  2])
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 IndexError: index 3 is out of bounds for axis 0 with size 3
+
 >>> x = cp.array([0, 1, 2])
 >>> x[[1, 3]]
 array([1, 0])
@@ -372,63 +341,49 @@ array([10, 10,  2])
 
 CuPy's `__setitem__` behaves differently from NumPy
 when integer arrays reference the same location multiple times.
-In that case, the value that is actually stored is undefined.
-
-```
-a = cp.zeros((2,))
-i = cp.arange(10000) % 2
-v = cp.arange(10000).astype(np.float32)
-a[i] = v
-a  
-array([ 9150.,  9151.])
-```
-
 NumPy stores the value corresponding to the last element
 among elements referencing duplicate locations.
+In CuPy, the value that is actually stored is undefined.
 
 ```
-a_cpu = np.zeros((2,))
-i_cpu = np.arange(10000) % 2
-v_cpu = np.arange(10000).astype(np.float32)
-a_cpu[i_cpu] = v_cpu
-a_cpu
+>>> a = np.zeros((2,))
+>>> i = np.arange(10000) % 2
+>>> v = np.arange(10000).astype(np.float32)
+>>> a[i] = v
+>>> a
 array([9998., 9999.])
-```
 
-
-```
->>> a_cpu = np.zeros((2,))
->>> i_cpu = np.arange(10000) % 2
->>> v_cpu = np.arange(10000).astype(np.float32)
->>> a_cpu[i_cpu] = v_cpu
->>> a_cpu
-array([9998., 9999.])
 >>> a = cp.zeros((2,))
 >>> i = cp.arange(10000) % 2
->>> v = cp.arange(10000).astype(np.float32)
+>>> v = cp.arange(10000).astype(cp.float32)
 >>> a[i] = v
 >>> a  
 array([4592., 4593.])
-
 ```
+
 
 ### Zero-dimensional array
 
-Reduction methods
+#### Reduction methods
 
 NumPy's reduction functions (e.g. numpy.sum()) return
 scalar values (e.g. numpy.float32). However
-CuPy counterparts return zero-dimensional cupy.ndarray. That is because CuPy scalar values (e.g. cupy.float32) are aliases of NumPy scalar values and are allocated in CPU memory. If these types were returned, it would be required to synchronize between GPU and CPU. If you want to use scalar values, cast the returned arrays explicitly.
+CuPy counterparts return zero-dimensional cupy.ndarray.
+That is because CuPy scalar values (e.g. cupy.float32)
+are aliases of NumPy scalar values and are allocated
+in CPU memory. If these types were returned, it would be
+required to synchronize between GPU and CPU. If you want to
+use scalar values, cast the returned arrays explicitly.
 
 ```
-type(np.sum(np.arange(3))) == np.int64
+>>> type(np.sum(np.arange(3))) == np.int64
 True
 
-type(cp.sum(cp.arange(3))) == cp.ndarray
+>>> type(cp.sum(cp.arange(3))) == cp.ndarray
 True
 ```
 
-Type promotion
+#### Type promotion
 
 CuPy automatically promotes dtypes of cupy.ndarray
 in a function with two or more operands, the result dtype
@@ -440,13 +395,13 @@ in operands of NumPy's function, This may affect the dtype
 of its output, depending on the values of the "scalar" inputs.
 
 ```
-(np.array(3, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
+>>> (np.array(3, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
 dtype('float32')
 
-(np.array(300000, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
+>>> (np.array(300000, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
 dtype('float64')
 
-(cp.array(3, dtype=np.int32) * cp.array([1., 2.], dtype=np.float32)).dtype
+>>> (cp.array(3, dtype=np.int32) * cp.array([1., 2.], dtype=np.float32)).dtype
 dtype('float64')
 
 ################## not working
@@ -477,16 +432,9 @@ CuPy array or scalar. They do not accept other objects
 (e.g., lists or numpy.ndarray).
 
 ```
-np.power([np.arange(5)], 2)
-array([[ 0,  1,  4,  9, 16]])
-
-cp.power([cp.arange(5)], 2)
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-TypeError: Unsupported type <class 'list'>
-
 >>> np.power([np.arange(5)], 2)
 array([[ 0,  1,  4,  9, 16]])
+
 >>> cp.power([cp.arange(5)], 2)
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
@@ -501,15 +449,14 @@ TypeError: Unsupported type <class 'list'>
 Like Numpy, CuPy's RandomState objects accept seeds
 either as numbers or as full numpy arrays.
 
-```
-seed = np.array([1, 2, 3, 4, 5])
-
-rs = cp.random.RandomState(seed=seed)
-```
-
 However, unlike Numpy, array seeds will be hashed down
 to a single number and so may not communicate as much entropy
 to the underlying random number generator.
+
+```
+>>> seed = np.array([1, 2, 3, 4, 5])
+>>> rs = cp.random.RandomState(seed=seed)
+```
 
 ### NaN (not-a-number) handling
 
@@ -517,31 +464,18 @@ By default CuPy's reduction functions (e.g., cupy.sum())
 handle NaNs in complex numbers differently from NumPy's counterparts:
 
 ```
-a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
-a_np = np.asarray(a)
-print(a_np.max(), a_np.min())
-(0.7+nanj) (0.7+nanj)
-
-a_cp = cp.asarray(a_np)
-print(a_cp.max(), a_cp.min())
-(nan-3.9j) (nan-3.9j)
-
-
 ################## not working
 >>> a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
 >>> a
 [(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
+
 >>> a_np = np.asarray(a)
->>> a
-[(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
->>> a_np
-array([0.5+3.7j, 0.7+nanj, nan-3.9j, nan+nanj])
 >>> print(a_np.max(), a_np.min())
 (0.7+nanj) (0.7+nanj)
+
 >>> a_cp = cp.asarray(a_np)
 >>> print(a_cp.max(), a_cp.min())
 (0.7+nanj) (0.7+nanj)
-
 ```
 
 The reason is that internally the reduction is performed
@@ -564,7 +498,7 @@ array([[1, 2],
        [3, 4]])
 >>> print((a + a).flags.f_contiguous)
 True
->>>
+
 >>> a = cp.array([[1, 2], [3, 4]], order='F')
 >>> a
 array([[1, 2],
