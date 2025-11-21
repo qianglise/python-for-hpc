@@ -268,6 +268,11 @@ and from infinity to an integer are examples.
 - Out-of-bounds indices and duplicate values in indices are handled differently.
 - Reduction methods return zero-dimension arrays.
 
+
+:::{exercise} When CuPy is different from NumPy/SciPy
+Here are various examples illustrating the differences
+:::
+
 :::{solution}
 ### Random seed arrays are hashed to scalars
 
