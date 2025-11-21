@@ -600,24 +600,6 @@ For this purpose, CuPy implements the cupy.get_array_module() function that
 returns a reference to cupy if any of its arguments resides on a GPU and numpy otherwise.
 
 Here is an example of a CPU/GPU agnostic function
-```
-import numpy as np
-import cupy as cp
-
-# define a simple function: f(x)=x+1
-def addone(x):
-    xp = cp.get_array_module(x) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
-    print("Using:", xp.__name__)
-    return x+1
-    
-# create an array and copy it to GPU
-a_cpu = np.arange(0, 20, 2)
-a_gpu = cp.asarray(a_cpu)
-
-# GPU/CPU agnostic code also works with CuPy
-print(addone(a_cpu))
-print(addone(a_gpu))
-```
 
 ```
 >>> import numpy as np
@@ -672,10 +654,10 @@ Names of NumPy data types can be used as type specifiers.
 
 ```
 >>> my_kernel = cp.ElementwiseKernel(
-...    'float32 x, float32 y',
-...    'float32 z',
-...    'z = (x - y) * (x - y)',
-...    'my_kernel')
+...    'float32 x, float32 y',  # input arg list
+...    'float32 z',             # output arg list
+...    'z = (x - y) * (x - y)', # function
+...    'my_kernel')             # kernel name
 ```
 
 In the first line, the object instantiation is named `kernel`.
@@ -688,35 +670,17 @@ The above kernel can be called on either scalars or arrays
 since the ElementwiseKernel class does the indexing with broadcasting automatically:
 
 ```
-import numpy as np
-import cupy as cp
-
-my_kernel = cp.ElementwiseKernel(
-   'float32 x, float32 y',
-   'float32 z',
-   'z = (x - y) * (x - y)',
-   'my_kernel')
-
-x = cp.arange(10, dtype=np.float32).reshape(2, 5)
-y = cp.arange(5, dtype=np.float32)
-my_kernel(x, y)
-array([[ 0.,  0.,  0.,  0.,  0.],
-       [25., 25., 25., 25., 25.]], dtype=float32)
-my_kernel(x, 5)
-array([[25., 16.,  9.,  4.,  1.],
-       [ 0.,  1.,  4.,  9., 16.]], dtype=float32)
-
 >>> import cupy as cp
->>>
+>>> # user-defined kernel
 >>> my_kernel = cp.ElementwiseKernel(
 ...    'float32 x, float32 y',
 ...    'float32 z',
 ...    'z = (x - y) * (x - y)',
 ...    'my_kernel')
->>>
+>>> # allocating arrays x and y
 >>> x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 >>> y = cp.arange(5, dtype=np.float32)
->>> 
+>>> # launch the kernel
 >>> my_kernel(x,y)
 array([[ 0.,  0.,  0.,  0.,  0.],
        [25., 25., 25., 25., 25.]], dtype=float32)
@@ -779,20 +743,22 @@ The ReductionKernel class has four extra parts:
 Here is an example to compute L2 norm along specified axies:
 ```
 >>> import cupy as cp
->>>
+>>> # user-defined kernel
 >>> l2norm_kernel = cp.ReductionKernel(
-    'T x',  # input params
-    'T y',  # output params
-    'x * x',  # map
-    'a + b',  # reduce
-    'y = sqrt(a)',  # post-reduction map
+    'T x',  # input arg list
+    'T y',  # output arg list
+    'x * x',  # mapping
+    'a + b',  # reduction
+    'y = sqrt(a)',  # post-reduction mapping function
     '0',  # identity value
     'l2norm'  # kernel name
     )
+>>> # allocating array
 >>> x = cp.arange(10, dtype=np.float32).reshape(2, 5)
 >>> x
 array([[0., 1., 2., 3., 4.],
        [5., 6., 7., 8., 9.]], dtype=float32)
+>>> # kernel launch
 >>> l2norm_kernel(x, axis=1)
 array([ 5.477226 , 15.9687195], dtype=float32)
 ```
@@ -803,27 +769,6 @@ The last is the RawKernel class, which is used to define kernels from raw CUDA/H
 
 RawKernel object allows you to call the kernel with CUDA's cuLaunchKernel interface,
 and this gives you control of e.g. the grid size, block size, shared memory size, and stream.
-
-```
-add_kernel = cp.RawKernel(r'''
-extern "C" __global__
-void my_add(const float* x1, const float* x2, float* y) {
-    int tid = blockDim.x * blockIdx.x + threadIdx.x;
-    y[tid] = x1[tid] + x2[tid];
-}
-''', 'my_add')
-
-x1 = cp.arange(25, dtype=cp.float32).reshape(5, 5)
-x2 = cp.arange(25, dtype=cp.float32).reshape(5, 5)
-y = cp.zeros((5, 5), dtype=cp.float32)
-add_kernel((5,), (5,), (x1, x2, y))  # grid, block and arguments
-y
-array([[ 0.,  2.,  4.,  6.,  8.],
-       [10., 12., 14., 16., 18.],
-       [20., 22., 24., 26., 28.],
-       [30., 32., 34., 36., 38.],
-       [40., 42., 44., 46., 48.]], dtype=float32)
-```
 
 ```
 >>> add_kernel = cp.RawKernel(r'''
@@ -872,29 +817,17 @@ However, it is still experimental, i.e. there are bugs and
 incomplete functionalities to be fixed.
 
 Here is the example using cupy.fuse() decorator
-```
-import cupy as cp
-
-@cp.fuse(kernel_name='squared_diff')
-def squared_diff(x, y):
-    return (x - y) * (x - y)
-
-x = cp.arange(10,dtype=cp.float32)
-y = x[::-1]
-
-squared_diff(x, y)
-array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
-```
 
 ```
 >>> import cupy as cp
->>> 
+>>> # adding decorator to the function squared_diff
 >>> @cp.fuse(kernel_name='squared_diff')
 ... def squared_diff(x, y):
 ...     return (x - y) * (x - y)
->>>
+>>> # allocating x and y
 >>> x = cp.arange(10,dtype=cp.float32)
 >>> y = x[::-1]
+>>> # call the function
 >>> squared_diff(x, y)
 array([81, 49, 25,  9,  1,  1,  9, 25, 49, 81])
 ```
@@ -907,7 +840,8 @@ are available for those who need more fine-grain control for performance:
 - Stream and Event: CUDA stream and per-thread default stream are supported by all APIs
 - Memory Pool: Customizable memory allocator with a built-in memory pool
 - Profiler: Supports profiling code using CUDA Profiler and NVTX
-- Host API Binding: Directly call CUDA libraries, such as NCCL, cuDNN, cuTENSOR, and cuSPARSELt APIs from Python
+- Host API Binding: Directly call CUDA libraries, such as
+  NCCL, cuDNN, cuTENSOR, and cuSPARSELt APIs from Python
 
 
 
