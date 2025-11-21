@@ -250,6 +250,7 @@ print("type(u_cpu) = ",type(u_cpu))
 ```
 :::
 
+### Exercises: CuPy vs Numpy/SciPy
 
 :::{exercise} CuPy vs Numpy/SciPy
 Although the CuPy team focuses on providing a complete
@@ -273,7 +274,13 @@ Here are various examples illustrating the differences
 :::{solution} When CuPy is different from NumPy/SciPy
 ### Cast behavior from float to integer
 
-Some casting behaviors from float to integer are not defined in C++ specification. The casting from a negative float to unsigned integer and infinity to integer is one of such examples. The behavior of NumPy depends on your CPU architecture. This is the result on an Intel CPU:
+Some casting behaviors from float to integer
+are not defined in C++ specification.
+The casting from a negative float to
+unsigned integer and infinity to integer
+is one of such examples. The behavior of NumPy
+depends on your CPU architecture.
+This is the result on an Intel CPU:
 
 ```
 np.array([-1], dtype=np.float32).astype(np.uint32)
@@ -281,6 +288,14 @@ np.array([-1], dtype=np.float32).astype(np.uint32)
 
 cp.array([-1], dtype=np.float32).astype(np.uint32)
 # array([0], dtype=uint32)
+```
+
+```python
+>>> np.array([-1], dtype=np.float32).astype(np.uint32)
+array([4294967295], dtype=uint32)
+>>>
+>>> cp.array([-1], dtype=np.float32).astype(np.uint32)
+array([0], dtype=uint32)
 ```
 
 ```python
@@ -293,7 +308,10 @@ array([2147483647], dtype=int32)
 
 ### Random methods support dtype argument
 
-NumPy’s random value generator does not support a dtype argument and instead always returns a float64 value. We support the option in CuPy because cuRAND, which is used in CuPy, supports both float32 and float64.
+NumPy's random value generator does not support
+a dtype argument and instead always returns
+a float64 value. While in CuPy, both
+float32 and float64 are supported because of cuRAND.
 
 ```
 np.random.randn(dtype=np.float32)
@@ -316,7 +334,9 @@ array(1.3591791, dtype=float32)
 
 ### Out-of-bounds indices
 
-CuPy handles out-of-bounds indices differently by default from NumPy when using integer array indexing. NumPy handles them by raising an error, but CuPy wraps around them.
+CuPy handles out-of-bounds indices differently
+by default from NumPy when using integer array indexing.
+NumPy handles them by raising an error, but CuPy wraps around them.
 
 ```
 x = np.array([0, 1, 2])
@@ -350,7 +370,9 @@ array([10, 10,  2])
 
 ### Duplicate values in indices
 
-CuPy's __setitem__ behaves differently from NumPy when integer arrays reference the same location multiple times. In that case, the value that is actually stored is undefined. Here is an example of CuPy.
+CuPy's `__setitem__` behaves differently from NumPy
+when integer arrays reference the same location multiple times.
+In that case, the value that is actually stored is undefined.
 
 ```
 a = cp.zeros((2,))
@@ -361,7 +383,8 @@ a
 array([ 9150.,  9151.])
 ```
 
-NumPy stores the value corresponding to the last element among elements referencing duplicate locations.
+NumPy stores the value corresponding to the last element
+among elements referencing duplicate locations.
 
 ```
 a_cpu = np.zeros((2,))
@@ -393,7 +416,9 @@ array([4592., 4593.])
 
 Reduction methods
 
-NumPy's reduction functions (e.g. numpy.sum()) return scalar values (e.g. numpy.float32). However CuPy counterparts return zero-dimensional cupy.ndarray s. That is because CuPy scalar values (e.g. cupy.float32) are aliases of NumPy scalar values and are allocated in CPU memory. If these types were returned, it would be required to synchronize between GPU and CPU. If you want to use scalar values, cast the returned arrays explicitly.
+NumPy's reduction functions (e.g. numpy.sum()) return
+scalar values (e.g. numpy.float32). However
+CuPy counterparts return zero-dimensional cupy.ndarray. That is because CuPy scalar values (e.g. cupy.float32) are aliases of NumPy scalar values and are allocated in CPU memory. If these types were returned, it would be required to synchronize between GPU and CPU. If you want to use scalar values, cast the returned arrays explicitly.
 
 ```
 type(np.sum(np.arange(3))) == np.int64
@@ -405,7 +430,14 @@ True
 
 Type promotion
 
-CuPy automatically promotes dtypes of cupy.ndarray s in a function with two or more operands, the result dtype is determined by the dtypes of the inputs. This is different from NumPy's rule on type promotion, when operands contain zero-dimensional arrays. Zero-dimensional numpy.ndarray s are treated as if they were scalar values if they appear in operands of NumPy's function, This may affect the dtype of its output, depending on the values of the "scalar" inputs.
+CuPy automatically promotes dtypes of cupy.ndarray
+in a function with two or more operands, the result dtype
+is determined by the dtypes of the inputs. This is different
+from NumPy's rule on type promotion, when operands contain
+zero-dimensional arrays. Zero-dimensional numpy.ndarray
+are treated as if they were scalar values if they appear
+in operands of NumPy's function, This may affect the dtype
+of its output, depending on the values of the "scalar" inputs.
 
 ```
 (np.array(3, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
@@ -425,17 +457,24 @@ dtype('float64')
 
 ### Matrix type (numpy.matrix)
 
-SciPy returns numpy.matrix (a subclass of numpy.ndarray) when dense matrices are computed from sparse matrices (e.g., coo_matrix + ndarray). However, CuPy returns cupy.ndarray for such operations.
+SciPy returns numpy.matrix (a subclass of numpy.ndarray)
+when dense matrices are computed from sparse matrices
+(e.g., coo_matrix + ndarray). However, CuPy returns
+cupy.ndarray for such operations.
 
-There is no plan to provide numpy.matrix equivalent in CuPy. This is because the use of numpy.matrix is no longer recommended since NumPy 1.15.
+There is no plan to provide numpy.matrix equivalent in CuPy.
+This is because the use of numpy.matrix is no longer
+recommended since NumPy 1.15.
 
 ### Data types
 
-Data type of CuPy arrays cannot be non-numeric like strings or objects. See Overview for details.
+Data type of CuPy arrays cannot be non-numeric like strings or objects.
 
 ### Universal Functions only work with CuPy array or scalar
 
-Unlike NumPy, Universal Functions in CuPy only work with CuPy array or scalar. They do not accept other objects (e.g., lists or numpy.ndarray).
+Unlike NumPy, Universal Functions in CuPy only work with
+CuPy array or scalar. They do not accept other objects
+(e.g., lists or numpy.ndarray).
 
 ```
 np.power([np.arange(5)], 2)
@@ -459,7 +498,8 @@ TypeError: Unsupported type <class 'list'>
 
 ### Random seed arrays are hashed to scalars
 
-Like Numpy, CuPy's RandomState objects accept seeds either as numbers or as full numpy arrays.
+Like Numpy, CuPy's RandomState objects accept seeds
+either as numbers or as full numpy arrays.
 
 ```
 seed = np.array([1, 2, 3, 4, 5])
@@ -467,11 +507,14 @@ seed = np.array([1, 2, 3, 4, 5])
 rs = cp.random.RandomState(seed=seed)
 ```
 
-However, unlike Numpy, array seeds will be hashed down to a single number and so may not communicate as much entropy to the underlying random number generator.
+However, unlike Numpy, array seeds will be hashed down
+to a single number and so may not communicate as much entropy
+to the underlying random number generator.
 
 ### NaN (not-a-number) handling
 
-By default CuPy's reduction functions (e.g., cupy.sum()) handle NaNs in complex numbers differently from NumPy’s counterparts:
+By default CuPy's reduction functions (e.g., cupy.sum())
+handle NaNs in complex numbers differently from NumPy's counterparts:
 
 ```
 a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
@@ -501,11 +544,18 @@ array([0.5+3.7j, 0.7+nanj, nan-3.9j, nan+nanj])
 
 ```
 
-The reason is that internally the reduction is performed in a strided fashion, thus it does not ensure a proper comparison order and cannot follow NumPy's rule to always propagate the first-encountered NaN. Note that this difference does not apply when CUB is enabled (which is the default for CuPy v11 or later.)
+The reason is that internally the reduction is performed
+in a strided fashion, thus it does not ensure a
+proper comparison order and cannot follow NumPy's rule
+to always propagate the first-encountered NaN.
+Note that this difference does not apply when CUB
+is enabled (which is the default for CuPy v11 or later.)
 
 ### Contiguity / Strides
 
-To provide the best performance, the contiguity of a resulting ndarray is not guaranteed to match with that of NumPy's output.
+To provide the best performance, the contiguity of
+a resulting ndarray is not guaranteed to match with
+that of NumPy's output.
 
 ```
 >>> a = np.array([[1, 2], [3, 4]], order='F')
@@ -527,8 +577,9 @@ False
 ## Interoperability
 
 CuPy implements standard APIs for data exchange and interoperability,
-which means it can be used in conjunction with any other libraries supporting the standard.
-For example, NumPy, Numba, PyTorch, TensorFlow, MPI4Py among others
+which means it can be used in conjunction with
+any other libraries supporting the standard. For example,
+NumPy, Numba, PyTorch, TensorFlow, MPI4Py among others
 can be directly operated on CuPy arrays.
 
 ### NumPy
@@ -637,11 +688,11 @@ print(addone(a_gpu))
 ```
 >>> import numpy as np
 >>> import cupy as cp
+>>> # define a simple function: f(x)=x+1
 >>> def addone(x):
 ...     xp = cp.get_array_module(x) # Returns cupy if any array is on the GPU, otherwise numpy.  'xp' is a standard usage in the community
 ...     print("Using:", xp.__name__)
 ...     return x+1
-... 
 >>> # create an array and copy it to GPU
 >>> a_cpu = np.arange(0, 20, 2)
 >>> a_gpu = cp.asarray(a_cpu)
