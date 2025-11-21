@@ -142,7 +142,7 @@ between the host (CPU) device and the GPU device,
 which is costly in terms of performance.
 :::
 
-#### Current Device
+### Current Device
 
 CuPy introduces the concept of a `current device`, 
 which represents the default GPU device on which 
