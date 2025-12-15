@@ -268,7 +268,7 @@ these features are called :cython:ref:`magic attributes <magic_attributes>`. Her
              from cython.cimports import numpy as np # access to NumPy C API
 
        .. group-tab:: Cython
-          .. code-block:: cython
+          .. code-block:: python
 
              from libc.stdlib cimport malloc, free
              from libc.libc cimport math
