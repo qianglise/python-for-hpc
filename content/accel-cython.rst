@@ -204,6 +204,16 @@ Next step, we further add type annotation to functions. There are three ways of 
    # 29.2 ms ± 152 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
+.. tabs::
+    .. group-tab:: Pure Python
+        .. literalinclude:: example/cython/integrate_cython_step3_purepy.py 
+           :emphasize-lines: 7,10
+
+    .. group-tab:: Cython
+        .. literalinclude:: example/cython/integrate_cython_step3.py 
+           :emphasize-lines: 6,9
+
+
 Cython: Adding data type annotation to local variables and return (step 4)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
