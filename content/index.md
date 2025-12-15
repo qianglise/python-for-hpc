@@ -22,6 +22,8 @@ Intro
 
 accel-cython
 cupy.md
+intohpc.md
+mpi4py.md
 ```
 
 ```{toctree}
