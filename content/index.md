@@ -20,6 +20,7 @@ Intro
 :caption: The lesson
 :maxdepth: 1
 
+accel-cython
 cupy.md
 ```
 
