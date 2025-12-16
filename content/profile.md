@@ -228,7 +228,7 @@ In [1]: %run -p -D wordcount.prof source/wordcount.py data/concat.txt processed_
 We can call ```cProfile``` as:
 
 ```bash
-$ python -m cProfile -o wordcount.prof source/wordcount.py data/concat.txt processed_data/concat.dat
+$ python -m cProfile -o walk.prof walk.py
 ```
 
 We can then generate a report using the ```pstats``` command:
