@@ -63,63 +63,12 @@ sufficiently large input data file and time the computation. We can
 do that by concatenating all the books into a single input file
 approximately 45 MB in size.
 
-::::{tab-set}
-
-:::{tab-item} IPython
-ffwe
-:::
-
-:::{tab-item} Unix Shell
-g45t4
-:::
-
-::::
-
-
-::::{tabs}
-:::{group-tab} Untidy format
-
-```{csv-table}
-:delim: ;
-# ; Runner ; 400 ; 800 ; 1200 ; 1500
-0 ; Runner 1 ; 64 ; 128 ; 192 ; 240
-1 ; Runner 2 ; 80 ; 160 ; 240 ; 300
-2 ; Runner 3 ; 96 ; 192 ; 288 ; 360
-```
-
-:::
-
-:::{group-tab} Tidy format
-
-```{csv-table}
-:delim: ,
-
-#, Runner, distance, time
-0, Runner 1, 400, 64
-
-```
-
-:::
-
-::::
-
-
-
-
-
-
-
-
-
-
 
 :::::{type-along}
 
 ::::{tabs}
-:sync-group: env
 
 :::{group-tab} IPython / Jupyter
-:sync: ipy
 
 Copy the following script.
 
@@ -160,7 +109,6 @@ import wordcount
 
 
 :::{group-tab} Unix Shell
-:sync: sh
 
 ```console
 $ cat data/pg*.txt > data/concat.txt
@@ -177,10 +125,8 @@ $ time python source/wordcount.py data/concat.txt processed_data/concat.dat
 :::::{solution}
 
 ::::{tabs}
-:sync-group: env
 
 :::{group-tab} IPython / Jupyter
-:sync: ipy
 
 ```ipython
 In [1]: %paste
@@ -214,7 +160,6 @@ Wall time: 2.8 s
 :::
 
 :::{group-tab} Unix Shell
-:sync: sh
 
 ```console
 $ cat data/pg*.txt > data/concat.txt
@@ -274,11 +219,10 @@ a = np.arange(1000)
 
 We could do the same for the `word_count` function.
 
-::::{tab-set}
-:sync-group: env
+::::{tabs}
 
-:::{tab-item} IPython / Jupyter
-:sync: ipy
+:::{group-tab} IPython / Jupyter
+
 
 ```ipython
 In [6]: %timeit wordcount.word_count("data/concat.txt", "processed_data/concat.dat", 1)
@@ -287,8 +231,7 @@ In [6]: %timeit wordcount.word_count("data/concat.txt", "processed_data/concat.d
 ```
 :::
 
-:::{tab-item} Unix Shell
-:sync: sh
+:::{group-tab} Unix Shell
 
 We could use `python -m timeit` which is the CLI interface of the standard library module `timeit`,
 
