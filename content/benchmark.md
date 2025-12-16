@@ -75,12 +75,50 @@ g45t4
 
 ::::
 
+
+::::{tabs}
+:::{group-tab} Untidy format
+
+```{csv-table}
+:delim: ;
+# ; Runner ; 400 ; 800 ; 1200 ; 1500
+0 ; Runner 1 ; 64 ; 128 ; 192 ; 240
+1 ; Runner 2 ; 80 ; 160 ; 240 ; 300
+2 ; Runner 3 ; 96 ; 192 ; 288 ; 360
+```
+
+:::
+
+:::{group-tab} Tidy format
+
+```{csv-table}
+:delim: ,
+
+#, Runner, distance, time
+0, Runner 1, 400, 64
+
+```
+
+:::
+
+::::
+
+
+
+
+
+
+
+
+
+
+
 :::::{type-along}
 
-::::{tab-set}
+::::{tabs}
 :sync-group: env
 
-:::{tab-item} IPython / Jupyter
+:::{group-tab} IPython / Jupyter
 :sync: ipy
 
 Copy the following script.
@@ -121,7 +159,7 @@ import wordcount
 :::
 
 
-:::{tab-item} Unix Shell
+:::{group-tab} Unix Shell
 :sync: sh
 
 ```console
@@ -138,10 +176,10 @@ $ time python source/wordcount.py data/concat.txt processed_data/concat.dat
 
 :::::{solution}
 
-::::{tab-set}
+::::{tabs}
 :sync-group: env
 
-:::{tab-item} IPython / Jupyter
+:::{group-tab} IPython / Jupyter
 :sync: ipy
 
 ```ipython
@@ -175,7 +213,7 @@ Wall time: 2.8 s
 
 :::
 
-:::{tab-item} Unix Shell
+:::{group-tab} Unix Shell
 :sync: sh
 
 ```console
