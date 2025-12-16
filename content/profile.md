@@ -231,10 +231,10 @@ We can call ```cProfile``` as:
 $ python -m cProfile -o walk.prof walk.py
 ```
 
-We can then generate a report using the ```pstats``` command:
+We can then generate a report using the ```pstats``` command [profile pstats module](https://docs.python.org/3/library/profile.html#module-pstats):
 
 ```bash
-$ python -m pstats wordcount.prof
+$ python -m pstats walk.prof
 # Welcome to the profile statistics browser.
 # wordcount.prof% sort tottime
 # wordcount.prof% stats
