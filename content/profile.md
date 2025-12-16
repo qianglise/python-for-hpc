@@ -10,9 +10,9 @@
 
 ## Deterministic profilers vs. sampling profilers
 
-```{note}
-   *Deterministic profilers* are also called *tracing profilers*.
-```
+While ```%timeit``` can provide good benchmarking information on single lines or single functions,
+larger codebases have more complex function hierarchies which require more sofisticated tools to
+traverse properly.
 
 **Deterministic profilers** record every function call and event in the program,
 logging the exact sequence and duration of events.
@@ -46,6 +46,10 @@ spent.
       - Provides an approximation rather than exact timing.
 
 
+```{note}
+   *Deterministic profilers* are also called *tracing profilers*.
+```
+
 :::{discussion}
    *Analogy*: Imagine we want to optimize the Stockholm Länstrafik (SL) metro system.
    We wish to detect bottlenecks in the system to improve the service and for this we have
@@ -63,9 +67,7 @@ spent.
 
 ## Using ```cProfile``` to investigate performance
 
-While ```%timeit``` can provide good benchmarking information on single lines or single functions,
-larger codebases have more complex function hierarchies which require more sofisticated tools to
-traverse properly. Python comes with two [built-in tools](https://docs.python.org/3/library/profile.html)
+Python comes with two [built-in tools](https://docs.python.org/3/library/profile.html)
 to profile code, which implement the same interface: ```cProfile``` and ```profile```. 
 These tools can help to identify performance bottlenecks in the code. 
 
