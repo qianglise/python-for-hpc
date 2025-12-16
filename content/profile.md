@@ -1,4 +1,4 @@
-# Profile
+# Profiler
 :::{objectives}
 
 - Learn how to profile Python code using ```cProfile```
@@ -140,6 +140,127 @@ $ python -m pstats wordcount.prof
 :::
 ::::
 :::::
+
+
+
+:::::{type-along}
+
+Let us consider the following code which simulates a random walk in one dimension.
+Save it as ``walk.py`` or download it from `here <example/walk.py>`.
+
+```python
+"""A 1-D random walk.
+
+See also:
+- https://lectures.scientific-python.org/intro/numpy/auto_examples/plot_randomwalk.html
+
+"""
+import numpy as np
+
+
+def step():
+    import random
+    return 1.0 if random.random() > 0.5 else -1.0
+
+
+def walk(n: int, dx: float = 1.0):
+    """The for-loop version.
+
+    Parameters
+    ----------
+    n: int
+        Number of time steps
+
+    dx: float
+        Step size. Default step size is unity.
+
+    """
+    xs = np.zeros(n)
+
+    for i in range(n - 1):
+        x_new = xs[i] + dx * step()
+        xs[i + 1] = x_new
+
+    return xs
+
+
+def walk_vec(n: int, dx: float = 1.0):
+    """The vectorized version of :func:`walk` using numpy functions."""
+    import random
+    steps = np.array(random.sample([1, -1], k=n, counts=[10 * n, 10 * n]))
+
+    # steps = np.random.choice([1, -1], size=n)
+
+    dx_steps = dx * steps
+
+    # set initial condition to zero
+    dx_steps[0] = 0
+    # use cumulative sum to replicate time evolution of position x
+    xs = np.cumsum(dx_steps)
+
+    return xs
+
+
+if __name__ == "__main__":
+    n = 1_000_000
+    _ = walk(n)
+    _ = walk_vec(n)
+
+```
+
+
+
+::::{tabs}
+
+:::{group-tab} IPython / Jupyter
+
+The ```%run``` magic supports profiling out-of-the-box using the ```-p``` flag. The script can be run as:
+
+```ipython
+In [1]: %run -p -D wordcount.prof source/wordcount.py data/concat.txt processed_data/concat.dat
+ 
+*** Profile stats marshalled to file 'wordcount.prof'.
+```
+:::
+
+:::{group-tab} Unix Shell
+
+We can call ```cProfile``` as:
+
+```bash
+$ python -m cProfile -o wordcount.prof source/wordcount.py data/concat.txt processed_data/concat.dat
+```
+
+We can then generate a report using the ```pstats``` command:
+
+```bash
+$ python -m pstats wordcount.prof
+# Welcome to the profile statistics browser.
+# wordcount.prof% sort tottime
+# wordcount.prof% stats
+# Wed Sep 25 11:52:27 2024    wordcount.prof
+
+#          53473208 function calls in 8.410 seconds
+
+#    Ordered by: internal time
+
+#    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   1233410    4.151    0.000    7.204    0.000 source/wordcount.py:41(update_word_counts)
+#  32068660    1.799    0.000    1.799    0.000 {method 'replace' of 'str' objects}
+#   7747363    0.570    0.000    0.570    0.000 {method 'lower' of 'str' objects}
+#   7747363    0.428    0.000    0.428    0.000 {method 'strip' of 'str' objects}
+#   1530212    0.271    0.000    0.271    0.000 source/wordcount.py:23(<genexpr>)
+#   1233411    0.256    0.000    0.256    0.000 {method 'split' of 'str' objects}
+#         1    0.184    0.184    7.388    7.388 source/wordcount.py:59(calculate_word_counts)
+#    382553    0.133    0.000    0.404    0.000 {method 'join' of 'str' objects}
+#         1    0.126    0.126    0.580    0.580 source/wordcount.py:16(save_word_counts)
+# ...
+```
+:::
+::::
+:::::
+
+
 
 :::{discussion}
 
