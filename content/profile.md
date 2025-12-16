@@ -20,6 +20,7 @@ logging the exact sequence and duration of events.
    👍 **Pros:**
       - Provides detailed information on the program's execution.
       - Deterministic: Captures exact call sequences and timings.
+
    👎 **Cons:**
       - Higher overhead, slowing down the program.
       - Can generate larger amount of data.
@@ -38,7 +39,7 @@ spent.
 
 
 :::{discussion}
-   *Analogy*: Imagine we want to optimize the Stockholm Länstrafik (SL) metro system
+   *Analogy*: Imagine we want to optimize the Stockholm Länstrafik (SL) metro system.
    We wish to detect bottlenecks in the system to improve the service and for this we have
    asked few passengers to help us by tracking their journey.
 
