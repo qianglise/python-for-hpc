@@ -24,6 +24,8 @@ accel-cython
 cupy.md
 intohpc.md
 mpi4py.md
+profile.md
+benchmark.md
 ```
 
 ```{toctree}
