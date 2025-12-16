@@ -146,7 +146,7 @@ $ python -m pstats wordcount.prof
 :::::{type-along}
 
 Let us consider the following code which simulates a random walk in one dimension.
-Save it as ``walk.py`` or download it from `here <example/walk.py>`. :download:`here <example/walk.py>`
+Save it as ``walk.py`` or download it from `here <example/walk.py>`. ![here](example/walk.py)
 
 ```python
 """A 1-D random walk.
@@ -217,9 +217,9 @@ if __name__ == "__main__":
 The ```%run``` magic supports profiling out-of-the-box using the ```-p``` flag. The script can be run as:
 
 ```ipython
-In [1]: %run -p -D wordcount.prof source/wordcount.py data/concat.txt processed_data/concat.dat
+In [1]: %run -p -D walk.prof walk.py
  
-*** Profile stats marshalled to file 'wordcount.prof'.
+*** Profile stats marshalled to file 'walk.prof'.
 ```
 :::
 
@@ -231,30 +231,17 @@ We can call ```cProfile``` as:
 $ python -m cProfile -o walk.prof walk.py
 ```
 
-We can then generate a report using the ```pstats``` command [profile pstats module](https://docs.python.org/3/library/profile.html#module-pstats):
+We can then generate a report using the [profile pstats module](https://docs.python.org/3/library/profile.html#module-pstats):
 
 ```bash
 $ python -m pstats walk.prof
 # Welcome to the profile statistics browser.
-# wordcount.prof% sort tottime
-# wordcount.prof% stats
-# Wed Sep 25 11:52:27 2024    wordcount.prof
+# walk.prof% sort tottime
+# walk.prof% stats
+# Wed Sep 25 11:52:27 2024    walk.prof
 
-#          53473208 function calls in 8.410 seconds
 
-#    Ordered by: internal time
 
-#    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-#   1233410    4.151    0.000    7.204    0.000 source/wordcount.py:41(update_word_counts)
-#  32068660    1.799    0.000    1.799    0.000 {method 'replace' of 'str' objects}
-#   7747363    0.570    0.000    0.570    0.000 {method 'lower' of 'str' objects}
-#   7747363    0.428    0.000    0.428    0.000 {method 'strip' of 'str' objects}
-#   1530212    0.271    0.000    0.271    0.000 source/wordcount.py:23(<genexpr>)
-#   1233411    0.256    0.000    0.256    0.000 {method 'split' of 'str' objects}
-#         1    0.184    0.184    7.388    7.388 source/wordcount.py:59(calculate_word_counts)
-#    382553    0.133    0.000    0.404    0.000 {method 'join' of 'str' objects}
-#         1    0.126    0.126    0.580    0.580 source/wordcount.py:16(save_word_counts)
-# ...
 ```
 :::
 ::::
