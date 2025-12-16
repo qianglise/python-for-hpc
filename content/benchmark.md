@@ -87,6 +87,22 @@ cargo install tauri-cli
 <!--- end-tab-group --->
 
 
+{{% tabs %}}
+{{% tab "Groovy" %}}
+ standard fenced code block here
+{{% /tab %}}
+
+{{% tab "JavaScript" %}}
+ standard fenced code block here
+{{% /tab %}}
+
+{{% tab "Ruby" %}}
+ standard fenced code block here
+{{% /tab %}}
+
+{{% /tabs %}}
+
+
 
 :::::{type-along}
 
