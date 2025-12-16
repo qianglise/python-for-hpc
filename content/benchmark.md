@@ -63,46 +63,17 @@ sufficiently large input data file and time the computation. We can
 do that by concatenating all the books into a single input file
 approximately 45 MB in size.
 
-<!--- begin-tab-group --->
-<!--- tab-title=npm --->
-```shell
-npm install --save-dev @tauri-apps/cli
-```
+::::{tab-set}
 
-<!--- tab-title=yarn --->
-```shell
-yarn add -D @tauri-apps/cli
-```
+:::{tab-item} IPython
+ffwe
+:::
 
-<!--- tab-title=pnpm --->
-```shell
-pnpm add -D @tauri-apps/cli
-```
+:::{tab-item} Unix Shell
+g45t4
+:::
 
-<!--- tab-title=Cargo --->
-```shell
-cargo install tauri-cli
-```
-
-<!--- end-tab-group --->
-
-
-{{% tabs %}}
-{{% tab "Groovy" %}}
- standard fenced code block here
-{{% /tab %}}
-
-{{% tab "JavaScript" %}}
- standard fenced code block here
-{{% /tab %}}
-
-{{% tab "Ruby" %}}
- standard fenced code block here
-{{% /tab %}}
-
-{{% /tabs %}}
-
-
+::::
 
 :::::{type-along}
 
