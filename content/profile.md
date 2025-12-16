@@ -7,12 +7,6 @@
 
 :::
 
-:::{instructor-note}
-
-- 15 min teaching/type-along
-:::
-
-
 ## Using ```cProfile``` to investigate performance
 
 While ```%timeit``` can provide good benchmarking information on single lines or single functions,
@@ -41,11 +35,9 @@ Use the shell variant. The profiling output from Jupyter, although it seems to w
 
 
 
-::::{tab-set}
-:sync-group: env
+::::{tabs}
 
-:::{tab-item} IPython / Jupyter
-:sync: ipy
+:::{group-tab} IPython / Jupyter
 
 The ```%run``` magic supports profiling out-of-the-box using the ```-p``` flag. The script can be run as:
 
@@ -56,8 +48,7 @@ In [1]: %run -p -D wordcount.prof source/wordcount.py data/concat.txt processed_
 ```
 :::
 
-:::{tab-item} Unix Shell
-:sync: sh
+:::{group-tab} Unix Shell
 
 We can call ```cProfile``` as:
 
@@ -110,12 +101,9 @@ dependecies installed in this virtual/Conda environment.
 
 ::::::{type-along}
 
+:::::{tabs}
 
-:::::{tab-set}
-:sync-group: env
-
-::::{tab-item} IPython / Jupyter
-:sync: ipy
+::::{group-tab} IPython / Jupyter
 
 SnakeViz has a IPython magic to profile and open a browser directly. To use it, we just 
 need to load the relevant extension and run it:
@@ -133,8 +121,7 @@ this will `not` work.
 
 :::: 
 
-::::{tab-item} Unix Shell
-:sync: sh
+::::{group-tab} Unix Shell
 
 We can run SnakeViz as:
 
@@ -163,11 +150,9 @@ breakdown of where time is spent.
 
 Let's profile the ```wordcount``` script and write the results to a file.
 
-::::{tab-set}
-:sync-group: env
+::::{tabs}
 
-:::{tab-item} IPython / Jupyter
-:sync: ipy
+:::{group-tab} IPython / Jupyter
 
 The ```line_profiler``` package provides a magic to be used in IPython. First, the 
 magic needs to be loaded:
@@ -185,8 +170,7 @@ In [5]: %lprun -f wordcount.update_word_counts wordcount.word_count("data/concat
 ```
 :::
 
-:::{tab-item} Unix Shell
-:sync: sh
+:::{group-tab} Unix Shell
 
 
 To use ```line_profiler``` from the command line, the functions to be profiled need to be explicitly marked.
