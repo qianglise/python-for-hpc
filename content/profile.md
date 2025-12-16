@@ -7,6 +7,51 @@
 
 :::
 
+
+## Deterministic profilers vs. sampling profilers
+
+```{note}
+   *Deterministic profilers* are also called *tracing profilers*.
+```
+
+**Deterministic profilers** record every function call and event in the program,
+logging the exact sequence and duration of events.
+
+   👍 **Pros:**
+      - Provides detailed information on the program's execution.
+      - Deterministic: Captures exact call sequences and timings.
+   👎 **Cons:**
+      - Higher overhead, slowing down the program.
+      - Can generate larger amount of data.
+
+**Sampling profilers** periodically samples the program's state (where it is
+and how much memory is used), providing a statistical view of where time is
+spent.
+
+   👍 **Pros:**
+      - Lower overhead, as it doesn't track every event.
+      - Scales better with larger programs.
+
+   👎 **Cons:**
+      - Less precise, potentially missing infrequent or short calls.
+      - Provides an approximation rather than exact timing.
+
+
+:::{discussion}
+   *Analogy*: Imagine we want to optimize the Stockholm Länstrafik (SL) metro system
+   We wish to detect bottlenecks in the system to improve the service and for this we have
+   asked few passengers to help us by tracking their journey.
+
+   - **Deterministic**:
+      We follow every train and passenger, recording every stop
+      and delay. When passengers enter and exit the train, we record the exact time
+      and location.
+   - **Sampling**:
+      Every 5 minutes the phone notifies the passenger to note
+      down their current location. We then use this information to estimate
+      the most crowded stations and trains.
+:::
+
 ## Using ```cProfile``` to investigate performance
 
 While ```%timeit``` can provide good benchmarking information on single lines or single functions,
