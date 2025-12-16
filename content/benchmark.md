@@ -8,11 +8,6 @@
 
 :::
 
-:::{instructor-note}
-
-- 15 min teaching/type-along
-:::
-
 ## The problem: word-count-hpda
 
 ![word-count schematic](./img/arrows.png)
@@ -67,6 +62,30 @@ In order to observe the cost of computation, we need to choose a
 sufficiently large input data file and time the computation. We can
 do that by concatenating all the books into a single input file
 approximately 45 MB in size.
+
+<!--- begin-tab-group --->
+<!--- tab-title=npm --->
+```shell
+npm install --save-dev @tauri-apps/cli
+```
+
+<!--- tab-title=yarn --->
+```shell
+yarn add -D @tauri-apps/cli
+```
+
+<!--- tab-title=pnpm --->
+```shell
+pnpm add -D @tauri-apps/cli
+```
+
+<!--- tab-title=Cargo --->
+```shell
+cargo install tauri-cli
+```
+
+<!--- end-tab-group --->
+
 
 
 :::::{type-along}
