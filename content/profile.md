@@ -18,11 +18,15 @@
 logging the exact sequence and duration of events.
 
    👍 **Pros:**
+   
       - Provides detailed information on the program's execution.
+      
       - Deterministic: Captures exact call sequences and timings.
 
    👎 **Cons:**
+   
       - Higher overhead, slowing down the program.
+      
       - Can generate larger amount of data.
 
 **Sampling profilers** periodically samples the program's state (where it is
@@ -30,11 +34,15 @@ and how much memory is used), providing a statistical view of where time is
 spent.
 
    👍 **Pros:**
+   
       - Lower overhead, as it doesn't track every event.
+      
       - Scales better with larger programs.
 
    👎 **Cons:**
+   
       - Less precise, potentially missing infrequent or short calls.
+      
       - Provides an approximation rather than exact timing.
 
 
