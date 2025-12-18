@@ -1,16 +1,16 @@
 # CuPy
 
 :::{questions}
-- How could I make my Python code to run on a GPU
-- How do I copy data to the GPU memory
+- How could I make my Python code to run on a GPU?
+- How do I copy data to the GPU memory?
 :::
 
 :::{objectives}
-- Learn the basics of CuPy
-- Be able to find out if a variable is stored in the CPU or GPU memory
-- Be able to copy data from host to device memory and vice versa
-- Be able to re-write a simple NumPy/SciPy 
-  function using CuPy to run on the GPUs
+- Understand the basics of the library CuPy and its functionalities
+- Analyze and detect whether a variable is stored in the CPU or GPU memory
+- Execute a data-copy operation from host to device memory and vice versa
+- Re-write a simple NumPy/SciPy 
+  function, to program the CuPy equivalent which runs on the GPUs
 <!-- - Be able to profile a simple function
   and estimate the speed-up by using GPU -->
 :::
@@ -19,17 +19,18 @@
 ## Introduction to CuPy
 
 Another excellent tool for writing Python code to run on GPUs is CuPy.
-CuPy is a NumPy/SciPy-compatible array library for
-GPU-accelerated computing with Python,
-which implements most of the NumPy/SciPy operations
+CuPy implements most of the NumPy/SciPy operations
 and acts as a drop-in replacement to run existing
-NumPy/SciPy code on both NVIDIA CUDA or AMD ROCm platforms.
+code on both NVIDIA CUDA or AMD ROCm platforms.
 By design, the CuPy interface is as close as possible to NumPy/SciPy,
 making code porting much easier.
 
-
-
-:::{highlight} python
+:::{note}
+A common misconception is that CuPy is an official NVIDIA project.
+It is rather a community driven project. Originally it was developed
+to support a deep-learning framework called Chainer (now deprecated),
+wherein it only supported CUDA as a target. Nowadays CuPy has
+great support for both NVIDIA CUDA or AMD ROCm platforms.
 :::
 
 ## Basics of CuPy
@@ -404,7 +405,7 @@ dtype('float64')
 >>> (cp.array(3, dtype=np.int32) * cp.array([1., 2.], dtype=np.float32)).dtype
 dtype('float64')
 
-################## not working
+################## FIXME: example not working
 >>> (np.array(3, dtype=np.int32) * np.array([1., 2.], dtype=np.float32)).dtype
 dtype('float64')
 
@@ -464,7 +465,7 @@ By default CuPy's reduction functions (e.g., cupy.sum())
 handle NaNs in complex numbers differently from NumPy's counterparts:
 
 ```
-################## not working
+################## FIXME: example not working
 >>> a = [0.5 + 3.7j, complex(0.7, np.nan), complex(np.nan, -3.9), complex(np.nan, np.nan)]
 >>> a
 [(0.5+3.7j), (0.7+nanj), (nan-3.9j), (nan+nanj)]
@@ -554,6 +555,7 @@ which is compatible with Numba v0.39.0 or later
 (see [CUDA Array Interface](https://numba.readthedocs.io/en/stable/cuda/cuda_array_interface.html)
 for details). It means one can pass CuPy arrays to kernels JITed with Numba.
 
+################### FIXME: crashes when launching
 ```
 import cupy as cp
 from numba import cuda
@@ -660,7 +662,7 @@ Names of NumPy data types can be used as type specifiers.
 ...    'my_kernel')             # kernel name
 ```
 
-In the first line, the object instantiation is named `kernel`.
+In the first line, the object instantiation is named `my_kernel`.
 The next line has the variables to be used as input (x and y) and output (z).
 These variables can be typed with NumPy data types, as shown.
 The function code then follows. The last line states the kernel name,
@@ -719,7 +721,7 @@ my_kernel_generic = cp.ElementwiseKernel(
     'z = (x - y) * (x - y)',
     'my_kernel_generic')
 ```
-################## check this
+################## FIXME: check this
 :::{note}
 This kernel requires the output argument to be explicitly specified,
 because the type Z cannot be automatically determined from
@@ -765,7 +767,7 @@ array([ 5.477226 , 15.9687195], dtype=float32)
 
 ### RawKernel
 
-The last is the RawKernel class, which is used to define kernels from raw CUDA/HIP XXXXXXX source.
+The last is the RawKernel class, which is used to define kernels from raw CUDA/HIP source code.
 
 RawKernel object allows you to call the kernel with CUDA's cuLaunchKernel interface,
 and this gives you control of e.g. the grid size, block size, shared memory size, and stream.
@@ -871,4 +873,5 @@ In this episode, we have learned about:
 - [CuPy Homepage](https://docs.cupy.dev/en/stable/index.html)
 - [GPU programming: When, Why and How?](https://enccs.github.io/gpu-programming)
 - [CUDA Python from Nvidia](https://nvidia.github.io/cuda-python/latest)
-
+- [CuPy Wiki page](https://en.wikipedia.org/wiki/CuPy)
+- [Chainer Blog](https://chainer.org/announcement/2019/12/05/released-v7.html)

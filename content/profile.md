@@ -146,7 +146,7 @@ $ python -m pstats wordcount.prof
 :::::{type-along}
 
 Let us consider the following code which simulates a random walk in one dimension.
-Save it as ``walk.py`` or download it from `here <example/walk.py>`. ![here](example/walk.py)
+Save it as ``walk.py`` or download it from `FIXME: here <example/walk.py>`. 
 
 ```python
 """A 1-D random walk.
